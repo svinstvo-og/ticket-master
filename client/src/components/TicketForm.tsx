@@ -72,8 +72,8 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
       area: "",
       element: "",
       priority: "Nízká",
-      status: "Otevřený", // Status is still included but won't be displayed in the form
       attachments: [],
+      // Status, employee and manager fields are now handled by the server
     },
   });
 

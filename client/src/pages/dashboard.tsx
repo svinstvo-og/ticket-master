@@ -168,8 +168,11 @@ export default function Dashboard() {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
+  const getStatusColor = (status: string | null) => {
+    // Default to "Otevřený" if status is null or empty
+    const safeStatus = status || "Otevřený";
+    
+    switch (safeStatus) {
       case "Otevřený":
         return "bg-blue-100 text-blue-800";
       case "Zpracovává se":
