@@ -505,19 +505,19 @@ export default function UserProfilePage() {
                               {/* Password Reset Dialog */}
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
-                                  <Button variant="outline" size="sm">Reset Password</Button>
+                                  <Button variant="outline" size="sm">Resetovat heslo</Button>
                                 </AlertDialogTrigger>
                                 <AlertDialogContent>
                                   <AlertDialogHeader>
-                                    <AlertDialogTitle>Reset User Password</AlertDialogTitle>
+                                    <AlertDialogTitle>Resetování hesla uživatele</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                      This will generate a new temporary password for the user. 
-                                      They will need to change it upon logging in. Are you sure you want to proceed?
+                                      Tato akce vygeneruje nové dočasné heslo pro uživatele.
+                                      Uživatel si bude muset heslo změnit při příštím přihlášení. Opravdu chcete pokračovat?
                                     </AlertDialogDescription>
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={handlePasswordReset}>Reset Password</AlertDialogAction>
+                                    <AlertDialogCancel>Zrušit</AlertDialogCancel>
+                                    <AlertDialogAction onClick={handlePasswordReset}>Resetovat heslo</AlertDialogAction>
                                   </AlertDialogFooter>
                                 </AlertDialogContent>
                               </AlertDialog>
@@ -535,20 +535,20 @@ export default function UserProfilePage() {
                                 <AlertDialogContent>
                                   <AlertDialogHeader>
                                     <AlertDialogTitle>
-                                      {selectedUserDetails.isActive ? "Deactivate User Account" : "Activate User Account"}
+                                      {selectedUserDetails.isActive ? "Deaktivace uživatelského účtu" : "Aktivace uživatelského účtu"}
                                     </AlertDialogTitle>
                                     <AlertDialogDescription>
                                       {selectedUserDetails.isActive 
-                                        ? "This will prevent the user from logging in and accessing the system. Are you sure you want to deactivate this account?"
-                                        : "This will allow the user to log in and access the system again. Are you sure you want to activate this account?"}
+                                        ? "Tato akce zabrání uživateli v přihlášení a přístupu do systému. Opravdu chcete deaktivovat tento účet?"
+                                        : "Tato akce umožní uživateli znovu se přihlásit a přistupovat do systému. Opravdu chcete aktivovat tento účet?"}
                                     </AlertDialogDescription>
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogCancel>Zrušit</AlertDialogCancel>
                                     <AlertDialogAction 
                                       onClick={() => handleSetUserStatus(!selectedUserDetails.isActive)}
                                     >
-                                      {selectedUserDetails.isActive ? "Deactivate" : "Activate"}
+                                      {selectedUserDetails.isActive ? "Deaktivovat" : "Aktivovat"}
                                     </AlertDialogAction>
                                   </AlertDialogFooter>
                                 </AlertDialogContent>
@@ -563,9 +563,9 @@ export default function UserProfilePage() {
                                 name="fullName"
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel>Full Name</FormLabel>
+                                    <FormLabel>Celé jméno</FormLabel>
                                     <FormControl>
-                                      <Input placeholder="Enter full name" {...field} />
+                                      <Input placeholder="Zadejte celé jméno" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                   </FormItem>
@@ -579,7 +579,7 @@ export default function UserProfilePage() {
                                   <FormItem>
                                     <FormLabel>Email</FormLabel>
                                     <FormControl>
-                                      <Input type="email" placeholder="Enter email" {...field} />
+                                      <Input type="email" placeholder="Zadejte email" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                   </FormItem>
@@ -592,9 +592,9 @@ export default function UserProfilePage() {
                                   name="department"
                                   render={({ field }) => (
                                     <FormItem>
-                                      <FormLabel>Department</FormLabel>
+                                      <FormLabel>Oddělení</FormLabel>
                                       <FormControl>
-                                        <Input placeholder="Enter department" {...field} />
+                                        <Input placeholder="Zadejte oddělení" {...field} />
                                       </FormControl>
                                       <FormMessage />
                                     </FormItem>
@@ -614,7 +614,7 @@ export default function UserProfilePage() {
                                       >
                                         <FormControl>
                                           <SelectTrigger>
-                                            <SelectValue placeholder="Select a role" />
+                                            <SelectValue placeholder="Vyberte roli" />
                                           </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
@@ -637,28 +637,28 @@ export default function UserProfilePage() {
                                 {updateUserMutation.isPending && (
                                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                 )}
-                                Save Changes
+                                Uložit změny
                               </Button>
                             </form>
                           </Form>
                           
                           {/* User Info */}
                           <div className="mt-8">
-                            <h3 className="text-lg font-medium mb-2">Account Information</h3>
+                            <h3 className="text-lg font-medium mb-2">Informace o účtu</h3>
                             <Separator className="mb-4" />
                             <div className="space-y-2">
                               <div className="flex justify-between">
-                                <span className="text-muted-foreground">Username:</span>
+                                <span className="text-muted-foreground">Uživatelské jméno:</span>
                                 <span className="font-medium">{selectedUserDetails.username}</span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-muted-foreground">Account Status:</span>
+                                <span className="text-muted-foreground">Stav účtu:</span>
                                 <span className={`font-medium ${selectedUserDetails.isActive ? 'text-green-600' : 'text-red-600'}`}>
                                   {selectedUserDetails.isActive ? 'Aktivní' : 'Neaktivní'}
                                 </span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-muted-foreground">Created:</span>
+                                <span className="text-muted-foreground">Vytvořeno:</span>
                                 <span className="font-medium">
                                   {selectedUserDetails.createdAt ? new Date(selectedUserDetails.createdAt).toLocaleDateString() : 'N/A'}
                                 </span>
@@ -669,7 +669,7 @@ export default function UserProfilePage() {
                       ) : (
                         <div className="flex flex-col items-center justify-center h-full py-12">
                           <p className="text-muted-foreground text-center mb-4">
-                            Select a user from the list to view and edit their details
+                            Vyberte uživatele ze seznamu pro zobrazení a úpravu jeho údajů
                           </p>
                         </div>
                       )}
