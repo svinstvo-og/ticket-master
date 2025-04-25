@@ -55,12 +55,14 @@ export const insertTicketSchema = z.object({
   area: z.string().optional(),
   element: z.string().optional(),
   
+  // Required fields for database (validated)
+  buildingId: z.number(),
+  floorId: z.number(),
+  roomId: z.number(),
+  areaId: z.number(),
+  elementId: z.number(),
+  
   // Optional fields
-  buildingId: z.number().optional(),
-  floorId: z.number().optional(),
-  roomId: z.number().optional(),
-  areaId: z.number().optional(),
-  elementId: z.number().optional(),
   departmentId: z.number().optional(),
   
   // User assignment fields

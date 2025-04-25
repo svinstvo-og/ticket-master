@@ -404,6 +404,11 @@ export class DatabaseStorage implements IStorage {
         RETURNING *
       `;
       
+      // Make sure created_by is set, as it's required in the database
+      if (!insertTicket.createdBy) {
+        console.warn('Warning: createdBy field is required but not provided');
+      }
+      
       const values = [
         insertTicket.title,
         insertTicket.description,
@@ -415,7 +420,8 @@ export class DatabaseStorage implements IStorage {
         elementId,
         insertTicket.priority,
         insertTicket.status || 'Otevřený',
-        insertTicket.createdBy || null
+        // Use 5 (admin) as a fallback if createdBy is not set
+        insertTicket.createdBy || 5
       ];
       
       const result = await pool.query(query, values);
