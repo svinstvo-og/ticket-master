@@ -47,7 +47,12 @@ interface BuildingDataType {
   [building: string]: BuildingInfo;
 }
 
-// Data for dependent dropdowns
+// Define types for area and element data
+interface AreaElementsType {
+  [area: string]: string[];
+}
+
+// Data for dependent dropdowns - buildings
 const buildingData: BuildingDataType = {
   "Building A": {
     floors: ["Přízemí", "1. patro", "2. patro"],
@@ -83,6 +88,14 @@ const buildingData: BuildingDataType = {
       "1. patro": ["D101 - Kancelář", "D102 - Zasedací místnost", "D103 - Kontrolní místnost"],
     }
   }
+};
+
+// Data for dependent dropdowns - areas and elements
+const areaElementsData: AreaElementsType = {
+  "Výtahy": ["Výtah 1", "Výtah 2", "Nákladní výtah", "Jídelní výtah"],
+  "Klimatizační a ventilační systémy": ["Klimatizace 1", "Klimatizace 2", "Ventilace A", "Ventilace B", "Chlazení serverovny"],
+  "Elektroinstalace": ["Hlavní rozvaděč", "Osvětlení", "Zásuvkové okruhy", "Záložní zdroj"],
+  "Vodoinstalace": ["Rozvody vody", "Sanitární zařízení", "Sprchy", "Odpadní systém"]
 };
 
 // Extend the schema with additional validation
@@ -200,6 +213,16 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
     
     // Reset room when floor changes
     form.setValue("room", "");
+  };
+  
+  // Handle area selection change
+  const handleAreaChange = (value: string) => {
+    // Update area field
+    form.setValue("area", value);
+    setSelectedArea(value);
+    
+    // Reset element when area changes
+    form.setValue("element", "");
   };
   
   // QR scanner handlers
@@ -506,10 +529,7 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
                       <FormLabel>Oblast *</FormLabel>
                       <Select
                         onValueChange={(value) => {
-                          field.onChange(value);
-                          setSelectedArea(value);
-                          // Reset the element value when area changes
-                          form.setValue("element", "");
+                          handleAreaChange(value);
                         }}
                         value={field.value}
                       >
@@ -519,8 +539,11 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Výtahy">Výtahy</SelectItem>
-                          <SelectItem value="Klimatizační a ventilační systémy">Klimatizační a ventilační systémy</SelectItem>
+                          {Object.keys(areaElementsData).map((area) => (
+                            <SelectItem key={area} value={area}>
+                              {area}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -545,15 +568,21 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {selectedArea === "Výtahy" && (
-                            <SelectItem value="Výtah">Výtah</SelectItem>
-                          )}
-                          {selectedArea === "Klimatizační a ventilační systémy" && (
-                            <SelectItem value="Klimatizace">Klimatizace</SelectItem>
-                          )}
+                          {selectedArea && areaElementsData[selectedArea] && 
+                            areaElementsData[selectedArea].map((element) => (
+                              <SelectItem key={element} value={element}>
+                                {element}
+                              </SelectItem>
+                            ))
+                          }
                         </SelectContent>
                       </Select>
                       <FormMessage />
+                      {!selectedArea && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Nejdříve vyberte oblast
+                        </p>
+                      )}
                     </FormItem>
                   )}
                 />
