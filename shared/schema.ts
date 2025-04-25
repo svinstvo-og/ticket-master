@@ -11,6 +11,8 @@ export const tickets = pgTable("tickets", {
   // facility field removed
   floor: text("floor").notNull(),
   room: text("room").notNull(), // Combined roomNumber and roomName into a single field
+  area: text("area").notNull(), // Oblast (Area) field
+  element: text("element").notNull(), // Prvek (Element) field
   priority: text("priority").notNull(),
   employeeAssigned: text("employee_assigned").notNull(),
   manager: text("manager").notNull(),

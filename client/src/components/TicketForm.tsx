@@ -53,6 +53,10 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
     message: "",
     type: "success",
   });
+  
+  // State for the dependent dropdown
+  const [selectedArea, setSelectedArea] = useState<string>("");
+  
   const { toast } = useToast();
 
   // Form definition
@@ -65,6 +69,8 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
       building: "",
       floor: "",
       room: "",
+      area: "",
+      element: "",
       priority: "Nízká",
       employeeAssigned: "",
       manager: "",
@@ -386,6 +392,66 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
                           <SelectItem value="201 - Kancelář">201 - Kancelář</SelectItem>
                           <SelectItem value="202 - Zasedací místnost">202 - Zasedací místnost</SelectItem>
                           <SelectItem value="203 - Technická místnost">203 - Technická místnost</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="area"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Oblast *</FormLabel>
+                      <Select
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          setSelectedArea(value);
+                          // Reset the element value when area changes
+                          form.setValue("element", "");
+                        }}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Vyberte oblast" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Výtahy">Výtahy</SelectItem>
+                          <SelectItem value="Klimatizační a ventilační systémy">Klimatizační a ventilační systémy</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="element"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Prvek *</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        disabled={!selectedArea} // Disable until an area is selected
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Vyberte prvek" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {selectedArea === "Výtahy" && (
+                            <SelectItem value="Výtah">Výtah</SelectItem>
+                          )}
+                          {selectedArea === "Klimatizační a ventilační systémy" && (
+                            <SelectItem value="Klimatizace">Klimatizace</SelectItem>
+                          )}
                         </SelectContent>
                       </Select>
                       <FormMessage />
