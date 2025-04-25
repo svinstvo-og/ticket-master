@@ -11,6 +11,7 @@ import AuthPage from "@/pages/auth-page";
 import LandingPage from "@/pages/landing-page";
 import Dashboard from "@/pages/dashboard";
 import UserProfilePage from "@/pages/user-profile-fixed";
+import LoginTest from "@/pages/login-test";
 
 function Router() {
   return (
@@ -20,6 +21,7 @@ function Router() {
       <ProtectedRoute path="/dashboard" component={Dashboard} />
       <ProtectedRoute path="/profile" component={UserProfilePage} />
       <Route path="/auth" component={AuthPage} />
+      <Route path="/login-test" component={LoginTest} />
       <Route component={NotFound} />
     </Switch>
   );
