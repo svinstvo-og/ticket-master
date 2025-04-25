@@ -5,6 +5,7 @@ import { insertTicketSchema } from "@shared/schema";
 import multer from "multer";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
+import { setupAuth } from "./auth";
 
 // Configure multer for memory storage
 const upload = multer({

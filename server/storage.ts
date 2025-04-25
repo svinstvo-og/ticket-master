@@ -1,4 +1,8 @@
 import { tickets, type Ticket, type InsertTicket, users, type User, type InsertUser } from "@shared/schema";
+import session from "express-session";
+import createMemoryStore from "memorystore";
+
+const MemoryStore = createMemoryStore(session);
 
 // modify the interface with any CRUD methods
 // you might need
@@ -15,6 +19,9 @@ export interface IStorage {
   createTicket(ticket: InsertTicket): Promise<Ticket>;
   updateTicket(id: number, ticket: Partial<InsertTicket>): Promise<Ticket | undefined>;
   deleteTicket(id: number): Promise<boolean>;
+  
+  // Session store
+  sessionStore: any;
 }
 
 export class MemStorage implements IStorage {
@@ -22,12 +29,16 @@ export class MemStorage implements IStorage {
   private tickets: Map<number, Ticket>;
   private userCurrentId: number;
   private ticketCurrentId: number;
+  sessionStore: any;
 
   constructor() {
     this.users = new Map();
     this.tickets = new Map();
     this.userCurrentId = 1;
     this.ticketCurrentId = 1;
+    this.sessionStore = new MemoryStore({
+      checkPeriod: 86400000 // prune expired entries every 24h
+    });
   }
 
   // User methods
