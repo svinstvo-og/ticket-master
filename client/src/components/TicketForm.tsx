@@ -837,7 +837,6 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
               <Button 
                 type="submit" 
                 disabled={ticketMutation.isPending}
-                onClick={() => console.log("Submit button clicked", form.getValues())}
                 className="bg-blue-600 hover:bg-blue-700 text-white"
               >
                 {ticketMutation.isPending ? "Odesílání..." : "Odeslat Tiket"}
