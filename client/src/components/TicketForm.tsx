@@ -33,6 +33,58 @@ import PrioritySelector from "./PrioritySelector";
 import FileUpload from "./FileUpload";
 import Alert from "./Alert";
 
+// Define types for the building data structure
+interface RoomsByFloor {
+  [floor: string]: string[];
+}
+
+interface BuildingInfo {
+  floors: string[];
+  rooms: RoomsByFloor;
+}
+
+interface BuildingDataType {
+  [building: string]: BuildingInfo;
+}
+
+// Data for dependent dropdowns
+const buildingData: BuildingDataType = {
+  "Building A": {
+    floors: ["Přízemí", "1. patro", "2. patro"],
+    rooms: {
+      "Přízemí": ["A001 - Recepce", "A002 - Lobby", "A003 - Zasedací místnost"],
+      "1. patro": ["A101 - Kancelář", "A102 - Zasedací místnost", "A103 - Kuchyňka"],
+      "2. patro": ["A201 - Kancelář", "A202 - Zasedací místnost", "A203 - Technická místnost"],
+    }
+  },
+  "Building B": {
+    floors: ["Přízemí", "1. patro", "2. patro", "3. patro"],
+    rooms: {
+      "Přízemí": ["B001 - Jídelna", "B002 - Sklad", "B003 - Kancelář"],
+      "1. patro": ["B101 - Kancelář", "B102 - Zasedací místnost", "B103 - Laboratoř"],
+      "2. patro": ["B201 - Kancelář", "B202 - Serverovna", "B203 - Odpočinková zóna"],
+      "3. patro": ["B301 - Kancelář", "B302 - Zasedací místnost", "B303 - Archiv"],
+    }
+  },
+  "Building C": {
+    floors: ["Přízemí", "1. patro", "2. patro", "3. patro", "4. patro"],
+    rooms: {
+      "Přízemí": ["C001 - Recepce", "C002 - Bezpečnostní místnost", "C003 - Jídelna"],
+      "1. patro": ["C101 - Showroom", "C102 - Kancelář", "C103 - Zasedací místnost"],
+      "2. patro": ["C201 - Kancelář", "C202 - Zasedací místnost", "C203 - Kuchyňka"],
+      "3. patro": ["C301 - Kancelář", "C302 - Technická místnost", "C303 - Laboratoř"],
+      "4. patro": ["C401 - Kancelář", "C402 - Zasedací místnost", "C403 - Relaxační zóna"],
+    }
+  },
+  "Building D": {
+    floors: ["Přízemí", "1. patro"],
+    rooms: {
+      "Přízemí": ["D001 - Výrobní hala", "D002 - Sklad", "D003 - Šatny"],
+      "1. patro": ["D101 - Kancelář", "D102 - Zasedací místnost", "D103 - Kontrolní místnost"],
+    }
+  }
+};
+
 // Extend the schema with additional validation
 const formSchema = insertTicketSchema.extend({});
 
@@ -54,8 +106,10 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
     type: "success",
   });
   
-  // State for the dependent dropdown
+  // State for the dependent dropdowns
   const [selectedArea, setSelectedArea] = useState<string>("");
+  const [selectedBuilding, setSelectedBuilding] = useState<string>("");
+  const [selectedFloor, setSelectedFloor] = useState<string>("");
   
   const { toast } = useToast();
 
@@ -126,12 +180,36 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
     ticketMutation.mutate(data);
   }
 
+  // Handle building selection change
+  const handleBuildingChange = (value: string) => {
+    // Update building field
+    form.setValue("building", value);
+    setSelectedBuilding(value);
+    
+    // Reset floor and room when building changes
+    form.setValue("floor", "");
+    form.setValue("room", "");
+    setSelectedFloor("");
+  };
+  
+  // Handle floor selection change
+  const handleFloorChange = (value: string) => {
+    // Update floor field
+    form.setValue("floor", value);
+    setSelectedFloor(value);
+    
+    // Reset room when floor changes
+    form.setValue("room", "");
+  };
+  
   // QR scanner handlers
   const handleQrScan = (result: string) => {
     const qrData = parseQrCode(result);
 
     if (qrData) {
-      form.setValue("building", qrData.building);
+      // Set building and update dependent dropdowns
+      handleBuildingChange(qrData.building);
+      
       // Show success alert
       setQrAlert({
         show: true,
@@ -154,6 +232,9 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
   const resetForm = () => {
     form.reset();
     setShowQrScanner(false);
+    setSelectedBuilding("");
+    setSelectedFloor("");
+    setSelectedArea("");
   };
 
   return (
@@ -318,7 +399,9 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
                     <FormItem>
                       <FormLabel>Budova *</FormLabel>
                       <Select
-                        onValueChange={field.onChange}
+                        onValueChange={(value) => {
+                          handleBuildingChange(value);
+                        }}
                         value={field.value}
                       >
                         <FormControl>
@@ -345,8 +428,11 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
                     <FormItem>
                       <FormLabel>Patro *</FormLabel>
                       <Select
-                        onValueChange={field.onChange}
+                        onValueChange={(value) => {
+                          handleFloorChange(value);
+                        }}
                         value={field.value}
+                        disabled={!selectedBuilding}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -354,14 +440,21 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Přízemí">Přízemí</SelectItem>
-                          <SelectItem value="1. patro">1. patro</SelectItem>
-                          <SelectItem value="2. patro">2. patro</SelectItem>
-                          <SelectItem value="3. patro">3. patro</SelectItem>
-                          <SelectItem value="4. patro">4. patro</SelectItem>
+                          {selectedBuilding && 
+                            buildingData[selectedBuilding as keyof typeof buildingData]?.floors.map((floor) => (
+                              <SelectItem key={floor} value={floor}>
+                                {floor}
+                              </SelectItem>
+                            ))
+                          }
                         </SelectContent>
                       </Select>
                       <FormMessage />
+                      {!selectedBuilding && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Nejdříve vyberte budovu
+                        </p>
+                      )}
                     </FormItem>
                   )}
                 />
@@ -375,6 +468,7 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
+                        disabled={!selectedBuilding || !selectedFloor}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -382,17 +476,24 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="101 - Kancelář">101 - Kancelář</SelectItem>
-                          <SelectItem value="102 - Zasedací místnost">102 - Zasedací místnost</SelectItem>
-                          <SelectItem value="103 - Kuchyňka">103 - Kuchyňka</SelectItem>
-                          <SelectItem value="104 - Toalety">104 - Toalety</SelectItem>
-                          <SelectItem value="105 - Sklad">105 - Sklad</SelectItem>
-                          <SelectItem value="201 - Kancelář">201 - Kancelář</SelectItem>
-                          <SelectItem value="202 - Zasedací místnost">202 - Zasedací místnost</SelectItem>
-                          <SelectItem value="203 - Technická místnost">203 - Technická místnost</SelectItem>
+                          {selectedBuilding && selectedFloor && 
+                            (buildingData[selectedBuilding] && 
+                             buildingData[selectedBuilding].rooms[selectedFloor] ?
+                               buildingData[selectedBuilding].rooms[selectedFloor].map((room: string) => (
+                                 <SelectItem key={room} value={room}>
+                                   {room}
+                                 </SelectItem>
+                               ))
+                             : null)
+                          }
                         </SelectContent>
                       </Select>
                       <FormMessage />
+                      {!selectedFloor && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Nejdříve vyberte patro
+                        </p>
+                      )}
                     </FormItem>
                   )}
                 />
