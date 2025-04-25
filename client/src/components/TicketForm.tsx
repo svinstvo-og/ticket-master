@@ -491,7 +491,7 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
 
       {/* Form */}
       <Form {...form}>
-        <form className="p-4 sm:p-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="p-4 sm:p-6">
           <div className="space-y-6">
             {/* Basic Info Section */}
             <div>
@@ -835,13 +835,9 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
                 Resetovat
               </Button>
               <Button 
-                type="button" 
+                type="submit" 
                 disabled={ticketMutation.isPending}
                 className="bg-blue-600 hover:bg-blue-700 text-white"
-                onClick={() => {
-                  console.log("Submit button clicked", form.getValues());
-                  form.handleSubmit(onSubmit)();
-                }}
               >
                 {ticketMutation.isPending ? "Odesílání..." : "Odeslat Tiket"}
               </Button>
