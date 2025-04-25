@@ -71,7 +71,14 @@ export class MemStorage implements IStorage {
   async createTicket(insertTicket: InsertTicket): Promise<Ticket> {
     const id = this.ticketCurrentId++;
     const createdAt = new Date();
-    const ticket: Ticket = { ...insertTicket, id, createdAt };
+    // Ensure attachments is always an array, even if undefined
+    const attachments = insertTicket.attachments || [];
+    const ticket: Ticket = { 
+      ...insertTicket, 
+      id, 
+      createdAt,
+      attachments 
+    };
     this.tickets.set(id, ticket);
     return ticket;
   }
