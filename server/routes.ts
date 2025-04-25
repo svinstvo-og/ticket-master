@@ -218,10 +218,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else if (req.user?.role === 'technician') {
         // Technicians can see tickets assigned to them
         const filteredTickets = tickets.filter(ticket => {
-          // If ticket has an employee assigned field, filter by that
-          return ticket.employeeAssigned === req.user?.username || 
-                 ticket.employeeAssigned === req.user?.fullName || 
-                 ticket.employeeAssigned === '';
+          // Filter by tickets assigned to this technician
+          return ticket.assignedTo === req.user?.id || 
+                 ticket.assignedTo === null; // Include unassigned tickets
         });
         return res.json(filteredTickets);
       }
@@ -262,9 +261,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json(ticket);
       } else if (req.user?.role === 'technician') {
         // Technicians can view tickets assigned to them
-        if (ticket.employeeAssigned === req.user?.username || 
-            ticket.employeeAssigned === req.user?.fullName || 
-            ticket.employeeAssigned === '') {
+        if (ticket.assignedTo === req.user?.id || ticket.assignedTo === null) {
           return res.json(ticket);
         } else {
           return res.status(403).json({ message: "Forbidden: You can only view tickets assigned to you" });
@@ -383,7 +380,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check role-based permissions for updates
       if (req.user?.role === 'user') {
         // Regular users: limited modifications, can't change status/assignment
-        if (ticketData.status || ticketData.employeeAssigned || ticketData.manager) {
+        if (ticketData.status || ticketData.assignedTo || ticketData.approvedBy) {
           return res.status(403).json({ 
             message: "Forbidden: Regular users cannot change ticket status or assignments" 
           });
@@ -392,9 +389,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Department Heads: can approve, escalate, assign
       } else if (req.user?.role === 'technician') {
         // Technicians: can only update their assigned tickets
-        if (ticket.employeeAssigned !== req.user?.username && 
-            ticket.employeeAssigned !== req.user?.fullName &&
-            ticket.employeeAssigned !== '') {
+        if (ticket.assignedTo !== req.user?.id && ticket.assignedTo !== null) {
           return res.status(403).json({ 
             message: "Forbidden: Technicians can only update tickets assigned to them" 
           });
