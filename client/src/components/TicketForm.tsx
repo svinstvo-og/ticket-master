@@ -174,8 +174,14 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
         throw error;
       }
     },
-    onSuccess: () => {
-      form.reset();
+    onSuccess: (data) => {
+      console.log("Ticket created successfully:", data);
+      toast({
+        title: "Tiket vytvořen",
+        description: "Váš tiket byl úspěšně odeslán."
+        // No variant needed - using default success styling
+      });
+      resetForm(); // Using our resetForm function which also resets location IDs
       onSubmitSuccess();
     },
     onError: (error) => {
@@ -192,9 +198,24 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
   function onSubmit(data: TicketFormValues) {
     console.log("Form submitted with data:", data);
     
+    // Check for required values
+    if (!data.title || !data.description || !data.category || !data.priority) {
+      toast({
+        title: "Chybějící údaje",
+        description: "Vyplňte prosím všechny povinné údaje.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     // Make sure all required location IDs are available
     if (!selectedBuildingId || !selectedFloorId || !selectedRoomId || !selectedAreaId || !selectedElementId) {
       console.error("Missing required location IDs");
+      toast({
+        title: "Chybějící umístění",
+        description: "Vyberte prosím všechny úrovně umístění (budova, patro, místnost, oblast, prvek).",
+        variant: "destructive"
+      });
       return;
     }
     
