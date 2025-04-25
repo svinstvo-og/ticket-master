@@ -10,7 +10,7 @@ import Home from "@/pages/home";
 import AuthPage from "@/pages/auth-page";
 import LandingPage from "@/pages/landing-page";
 import Dashboard from "@/pages/dashboard";
-import UserProfilePage from "@/pages/user-profile";
+import UserProfilePage from "@/pages/user-profile-fixed";
 
 function Router() {
   return (

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useUsers } from "@/hooks/use-users";
 import { useForm } from "react-hook-form";
@@ -173,16 +174,83 @@ export default function UserProfilePage() {
 
   // If no user, redirect handled by ProtectedRoute
 
+  const { logoutMutation } = useAuth();
+  
   return (
-    <div className="container mx-auto py-10 px-4 sm:px-6">
-      <h1 className="text-3xl font-bold mb-6">User Profile</h1>
+    <div>
+      {/* Navigation Header */}
+      <div className="bg-white border-b sticky top-0 z-10 shadow-sm">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center">
+              <Link href="/">
+                <span className="text-xl font-bold text-blue-600 cursor-pointer">
+                  TechTicket
+                </span>
+              </Link>
+              
+              <nav className="hidden md:ml-10 md:flex items-center space-x-8">
+                <Link href="/dashboard">
+                  <span className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium cursor-pointer">
+                    Dashboard
+                  </span>
+                </Link>
+                <Link href="/tickets">
+                  <span className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium cursor-pointer">
+                    Nový Tiket
+                  </span>
+                </Link>
+                <Link href="/profile">
+                  <span className="text-blue-600 px-3 py-2 text-sm font-medium cursor-pointer border-b-2 border-blue-600">
+                    Můj Profil
+                  </span>
+                </Link>
+              </nav>
+            </div>
+            
+            <div className="hidden md:flex items-center space-x-4">
+              <div className="text-sm text-gray-600">
+                {user?.username}
+              </div>
+              <Button variant="outline" size="sm" onClick={() => logoutMutation.mutate()}>
+                Odhlásit se
+              </Button>
+            </div>
+            
+            {/* Mobile Menu Button */}
+            <div className="md:hidden flex items-center">
+              <Button variant="ghost" size="sm" className="text-gray-500">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-6 w-6"
+                >
+                  <line x1="4" x2="20" y1="12" y2="12" />
+                  <line x1="4" x2="20" y1="6" y2="6" />
+                  <line x1="4" x2="20" y1="18" y2="18" />
+                </svg>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
       
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="mb-6">
-          <TabsTrigger value="profile">My Profile</TabsTrigger>
-          <TabsTrigger value="password">Change Password</TabsTrigger>
-          {isAdmin && <TabsTrigger value="admin">User Management</TabsTrigger>}
-        </TabsList>
+      <div className="container mx-auto py-10 px-4 sm:px-6">
+        <h1 className="text-3xl font-bold mb-6">User Profile</h1>
+        
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="mb-6">
+            <TabsTrigger value="profile">My Profile</TabsTrigger>
+            <TabsTrigger value="password">Change Password</TabsTrigger>
+            {isAdmin && <TabsTrigger value="admin">User Management</TabsTrigger>}
+          </TabsList>
         
         {/* Profile Tab */}
         <TabsContent value="profile">
