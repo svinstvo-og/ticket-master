@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertTicketSchema } from "@shared/schema";
 import { z } from "zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { parseQrCode } from "@/lib/utils";
 
@@ -33,259 +33,40 @@ import PrioritySelector from "./PrioritySelector";
 import FileUpload from "./FileUpload";
 import Alert from "./Alert";
 
-// Define types for the cascading dropdown structure
-interface ElementType {
+// Define types for location data from the database
+interface Element {
+  id: number;
   name: string;
+  area_id: number;
 }
 
-interface AreaType {
+interface Area {
+  id: number;
   name: string;
-  elements: ElementType[];
+  room_id: number;
+  elements?: Element[];
 }
 
-interface RoomType {
+interface Room {
+  id: number;
   name: string;
-  areas: AreaType[];
+  floor_id: number;
+  areas?: Area[];
 }
 
-interface FloorType {
+interface Floor {
+  id: number;
   name: string;
-  rooms: RoomType[];
+  building_id: number;
+  rooms?: Room[];
 }
 
-interface BuildingType {
+interface Building {
+  id: number;
   name: string;
-  floors: FloorType[];
+  address?: string;
+  floors?: Floor[];
 }
-
-// Full cascading data structure for dependent dropdowns
-const cascadingData: BuildingType[] = [
-  {
-    name: "Building A",
-    floors: [
-      {
-        name: "Přízemí",
-        rooms: [
-          {
-            name: "A001 - Recepce",
-            areas: [
-              {
-                name: "Klimatizační a ventilační systémy",
-                elements: [
-                  { name: "Klimatizace 1" },
-                  { name: "Ventilace A" }
-                ]
-              },
-              {
-                name: "Elektroinstalace",
-                elements: [
-                  { name: "Osvětlení" },
-                  { name: "Zásuvkové okruhy" }
-                ]
-              }
-            ]
-          },
-          {
-            name: "A002 - Lobby",
-            areas: [
-              {
-                name: "Výtahy",
-                elements: [
-                  { name: "Výtah 1" },
-                  { name: "Výtah 2" }
-                ]
-              },
-              {
-                name: "Elektroinstalace",
-                elements: [
-                  { name: "Hlavní rozvaděč" },
-                  { name: "Osvětlení" }
-                ]
-              }
-            ]
-          },
-          {
-            name: "A003 - Zasedací místnost",
-            areas: [
-              {
-                name: "Klimatizační a ventilační systémy",
-                elements: [
-                  { name: "Klimatizace 2" }
-                ]
-              },
-              {
-                name: "Vodoinstalace",
-                elements: [
-                  { name: "Rozvody vody" }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        name: "1. patro",
-        rooms: [
-          {
-            name: "A101 - Kancelář",
-            areas: [
-              {
-                name: "Klimatizační a ventilační systémy",
-                elements: [
-                  { name: "Klimatizace 1" }
-                ]
-              },
-              {
-                name: "Elektroinstalace",
-                elements: [
-                  { name: "Osvětlení" },
-                  { name: "Zásuvkové okruhy" }
-                ]
-              }
-            ]
-          },
-          {
-            name: "A102 - Zasedací místnost",
-            areas: [
-              {
-                name: "Klimatizační a ventilační systémy",
-                elements: [
-                  { name: "Klimatizace 2" }
-                ]
-              }
-            ]
-          },
-          {
-            name: "A103 - Kuchyňka",
-            areas: [
-              {
-                name: "Vodoinstalace",
-                elements: [
-                  { name: "Rozvody vody" },
-                  { name: "Odpadní systém" }
-                ]
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  },
-  {
-    name: "Building B",
-    floors: [
-      {
-        name: "Přízemí",
-        rooms: [
-          {
-            name: "B001 - Jídelna",
-            areas: [
-              {
-                name: "Klimatizační a ventilační systémy",
-                elements: [
-                  { name: "Ventilace B" }
-                ]
-              },
-              {
-                name: "Vodoinstalace",
-                elements: [
-                  { name: "Sanitární zařízení" }
-                ]
-              }
-            ]
-          },
-          {
-            name: "B002 - Sklad",
-            areas: [
-              {
-                name: "Výtahy",
-                elements: [
-                  { name: "Nákladní výtah" }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        name: "1. patro",
-        rooms: [
-          {
-            name: "B101 - Kancelář",
-            areas: [
-              {
-                name: "Klimatizační a ventilační systémy",
-                elements: [
-                  { name: "Klimatizace 1" }
-                ]
-              }
-            ]
-          },
-          {
-            name: "B102 - Zasedací místnost",
-            areas: [
-              {
-                name: "Elektroinstalace",
-                elements: [
-                  { name: "Osvětlení" }
-                ]
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  },
-  {
-    name: "Building C",
-    floors: [
-      {
-        name: "Přízemí",
-        rooms: [
-          {
-            name: "C001 - Recepce",
-            areas: [
-              {
-                name: "Výtahy",
-                elements: [
-                  { name: "Výtah 1" },
-                  { name: "Výtah 2" }
-                ]
-              }
-            ]
-          },
-          {
-            name: "C002 - Bezpečnostní místnost",
-            areas: [
-              {
-                name: "Elektroinstalace",
-                elements: [
-                  { name: "Záložní zdroj" }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        name: "1. patro",
-        rooms: [
-          {
-            name: "C101 - Showroom",
-            areas: [
-              {
-                name: "Klimatizační a ventilační systémy",
-                elements: [
-                  { name: "Klimatizace 2" }
-                ]
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  }
-];
 
 // Extend the schema with additional validation
 const formSchema = insertTicketSchema.extend({});
@@ -314,6 +95,19 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
   const [selectedRoom, setSelectedRoom] = useState<string>("");
   const [selectedArea, setSelectedArea] = useState<string>("");
   const [selectedElement, setSelectedElement] = useState<string>("");
+  
+  // State for storing IDs corresponding to selected names
+  const [selectedBuildingId, setSelectedBuildingId] = useState<number | null>(null);
+  const [selectedFloorId, setSelectedFloorId] = useState<number | null>(null);
+  const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
+  const [selectedAreaId, setSelectedAreaId] = useState<number | null>(null);
+  const [selectedElementId, setSelectedElementId] = useState<number | null>(null);
+  
+  // Fetch location hierarchy data
+  const { data: locationData, isLoading: isLocationDataLoading } = useQuery<Building[]>({
+    queryKey: ['/api/location-hierarchy'],
+    refetchOnWindowFocus: false,
+  });
   
   const { toast } = useToast();
 
@@ -404,9 +198,18 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
 
   // Handle building selection change
   const handleBuildingChange = (value: string) => {
-    // Update building field
+    if (!locationData) return;
+    
+    // Find the building by name
+    const building = locationData.find(b => b.name === value);
+    
+    // Update building field and ID
     form.setValue("building", value);
     setSelectedBuilding(value);
+    
+    if (building) {
+      setSelectedBuildingId(building.id);
+    }
     
     // Reset dependent fields
     form.setValue("floor", "");
@@ -417,13 +220,27 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
     setSelectedRoom("");
     setSelectedArea("");
     setSelectedElement("");
+    setSelectedFloorId(null);
+    setSelectedRoomId(null);
+    setSelectedAreaId(null);
+    setSelectedElementId(null);
   };
   
   // Handle floor selection change
   const handleFloorChange = (value: string) => {
-    // Update floor field
+    if (!locationData || !selectedBuilding) return;
+    
+    // Find the floor by name
+    const building = locationData.find(b => b.name === selectedBuilding);
+    const floor = building?.floors?.find(f => f.name === value);
+    
+    // Update floor field and ID
     form.setValue("floor", value);
     setSelectedFloor(value);
+    
+    if (floor) {
+      setSelectedFloorId(floor.id);
+    }
     
     // Reset dependent fields
     form.setValue("room", "");
@@ -432,37 +249,79 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
     setSelectedRoom("");
     setSelectedArea("");
     setSelectedElement("");
+    setSelectedRoomId(null);
+    setSelectedAreaId(null);
+    setSelectedElementId(null);
   };
   
   // Handle room selection change
   const handleRoomChange = (value: string) => {
-    // Update room field
+    if (!locationData || !selectedBuilding || !selectedFloor) return;
+    
+    // Find the room by name
+    const building = locationData.find(b => b.name === selectedBuilding);
+    const floor = building?.floors?.find(f => f.name === selectedFloor);
+    const room = floor?.rooms?.find(r => r.name === value);
+    
+    // Update room field and ID
     form.setValue("room", value);
     setSelectedRoom(value);
+    
+    if (room) {
+      setSelectedRoomId(room.id);
+    }
     
     // Reset dependent fields
     form.setValue("area", "");
     form.setValue("element", "");
     setSelectedArea("");
     setSelectedElement("");
+    setSelectedAreaId(null);
+    setSelectedElementId(null);
   };
   
   // Handle area selection change
   const handleAreaChange = (value: string) => {
-    // Update area field
+    if (!locationData || !selectedBuilding || !selectedFloor || !selectedRoom) return;
+    
+    // Find the area by name
+    const building = locationData.find(b => b.name === selectedBuilding);
+    const floor = building?.floors?.find(f => f.name === selectedFloor);
+    const room = floor?.rooms?.find(r => r.name === selectedRoom);
+    const area = room?.areas?.find(a => a.name === value);
+    
+    // Update area field and ID
     form.setValue("area", value);
     setSelectedArea(value);
+    
+    if (area) {
+      setSelectedAreaId(area.id);
+    }
     
     // Reset element when area changes
     form.setValue("element", "");
     setSelectedElement("");
+    setSelectedElementId(null);
   };
   
   // Handle element selection change
   const handleElementChange = (value: string) => {
-    // Update element field
+    if (!locationData || !selectedBuilding || !selectedFloor || !selectedRoom || !selectedArea) return;
+    
+    // Find the element by name
+    const building = locationData.find(b => b.name === selectedBuilding);
+    const floor = building?.floors?.find(f => f.name === selectedFloor);
+    const room = floor?.rooms?.find(r => r.name === selectedRoom);
+    const area = room?.areas?.find(a => a.name === selectedArea);
+    const element = area?.elements?.find(e => e.name === value);
+    
+    // Update element field and ID
     form.setValue("element", value);
     setSelectedElement(value);
+    
+    if (element) {
+      setSelectedElementId(element.id);
+    }
   };
   
   // QR scanner handlers
@@ -500,6 +359,11 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
     setSelectedRoom("");
     setSelectedArea("");
     setSelectedElement("");
+    setSelectedBuildingId(null);
+    setSelectedFloorId(null);
+    setSelectedRoomId(null);
+    setSelectedAreaId(null);
+    setSelectedElementId(null);
   };
 
   return (
@@ -675,11 +539,17 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {cascadingData.map((building) => (
-                            <SelectItem key={building.name} value={building.name}>
-                              {building.name.replace("Building ", "Budova ")}
-                            </SelectItem>
-                          ))}
+                          {isLocationDataLoading ? (
+                            <SelectItem value="loading">Načítání...</SelectItem>
+                          ) : locationData && locationData.length > 0 ? (
+                            locationData.map((building) => (
+                              <SelectItem key={building.id} value={building.name}>
+                                {building.name}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="no-data">Žádná data</SelectItem>
+                          )}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -706,13 +576,17 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {selectedBuilding && 
-                            cascadingData.find(b => b.name === selectedBuilding)?.floors.map((floor) => (
-                              <SelectItem key={floor.name} value={floor.name}>
+                          {isLocationDataLoading ? (
+                            <SelectItem value="loading">Načítání...</SelectItem>
+                          ) : selectedBuilding && locationData ? (
+                            locationData.find(b => b.name === selectedBuilding)?.floors?.map((floor) => (
+                              <SelectItem key={floor.id} value={floor.name}>
                                 {floor.name}
                               </SelectItem>
-                            ))
-                          }
+                            )) || <SelectItem value="no-floors">Žádná patra</SelectItem>
+                          ) : (
+                            <SelectItem value="no-data">Vyberte budovu</SelectItem>
+                          )}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -744,15 +618,19 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {selectedBuilding && selectedFloor && 
-                            cascadingData.find(b => b.name === selectedBuilding)
-                            ?.floors.find(f => f.name === selectedFloor)
-                            ?.rooms.map((room) => (
-                              <SelectItem key={room.name} value={room.name}>
+                          {isLocationDataLoading ? (
+                            <SelectItem value="loading">Načítání...</SelectItem>
+                          ) : selectedBuilding && selectedFloor && locationData ? (
+                            locationData.find(b => b.name === selectedBuilding)
+                            ?.floors?.find(f => f.name === selectedFloor)
+                            ?.rooms?.map((room) => (
+                              <SelectItem key={room.id} value={room.name}>
                                 {room.name}
                               </SelectItem>
-                            ))
-                          }
+                            )) || <SelectItem value="no-rooms">Žádné místnosti</SelectItem>
+                          ) : (
+                            <SelectItem value="no-data">Vyberte patro</SelectItem>
+                          )}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -784,16 +662,20 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {selectedBuilding && selectedFloor && selectedRoom && 
-                            cascadingData.find(b => b.name === selectedBuilding)
-                            ?.floors.find(f => f.name === selectedFloor)
-                            ?.rooms.find(r => r.name === selectedRoom)
-                            ?.areas.map((area) => (
-                              <SelectItem key={area.name} value={area.name}>
+                          {isLocationDataLoading ? (
+                            <SelectItem value="loading">Načítání...</SelectItem>
+                          ) : selectedBuilding && selectedFloor && selectedRoom && locationData ? (
+                            locationData.find(b => b.name === selectedBuilding)
+                            ?.floors?.find(f => f.name === selectedFloor)
+                            ?.rooms?.find(r => r.name === selectedRoom)
+                            ?.areas?.map((area) => (
+                              <SelectItem key={area.id} value={area.name}>
                                 {area.name}
                               </SelectItem>
-                            ))
-                          }
+                            )) || <SelectItem value="no-areas">Žádné oblasti</SelectItem>
+                          ) : (
+                            <SelectItem value="no-data">Vyberte místnost</SelectItem>
+                          )}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -825,17 +707,21 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {selectedBuilding && selectedFloor && selectedRoom && selectedArea && 
-                            cascadingData.find(b => b.name === selectedBuilding)
-                            ?.floors.find(f => f.name === selectedFloor)
-                            ?.rooms.find(r => r.name === selectedRoom)
-                            ?.areas.find(a => a.name === selectedArea)
-                            ?.elements.map((element) => (
-                              <SelectItem key={element.name} value={element.name}>
+                          {isLocationDataLoading ? (
+                            <SelectItem value="loading">Načítání...</SelectItem>
+                          ) : selectedBuilding && selectedFloor && selectedRoom && selectedArea && locationData ? (
+                            locationData.find(b => b.name === selectedBuilding)
+                            ?.floors?.find(f => f.name === selectedFloor)
+                            ?.rooms?.find(r => r.name === selectedRoom)
+                            ?.areas?.find(a => a.name === selectedArea)
+                            ?.elements?.map((element) => (
+                              <SelectItem key={element.id} value={element.name}>
                                 {element.name}
                               </SelectItem>
-                            ))
-                          }
+                            )) || <SelectItem value="no-elements">Žádné prvky</SelectItem>
+                          ) : (
+                            <SelectItem value="no-data">Vyberte oblast</SelectItem>
+                          )}
                         </SelectContent>
                       </Select>
                       <FormMessage />
