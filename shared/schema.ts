@@ -45,8 +45,8 @@ const baseSchema = createInsertSchema(tickets).omit({
 export const insertTicketSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
-  category: z.string(),
-  priority: z.string(),
+  category: z.string().default("IT"), // Default to IT if not specified
+  priority: z.string().default("Nízká"), // Default to Low if not specified
   
   // These will be mapped to IDs
   building: z.string().optional(),
@@ -66,10 +66,10 @@ export const insertTicketSchema = z.object({
   departmentId: z.number().optional(),
   
   // User assignment fields
-  status: z.string().optional(),
+  status: z.string().optional().default('Otevřený'),
   createdBy: z.number().optional(), // Current user ID (will be added on the server)
-  assignedTo: z.number().optional(),
-  approvedBy: z.number().optional(),
+  assignedTo: z.number().optional().nullable(),
+  approvedBy: z.number().optional().nullable(),
   
   // Additional fields
   dueDate: z.date().optional(),

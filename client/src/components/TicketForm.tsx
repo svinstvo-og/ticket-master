@@ -199,13 +199,19 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
     console.log("Form submitted with data:", data);
     
     // Check for required values
-    if (!data.title || !data.description || !data.category || !data.priority) {
+    if (!data.title || !data.description || !data.priority) {
       toast({
         title: "Chybějící údaje",
-        description: "Vyplňte prosím všechny povinné údaje.",
+        description: "Vyplňte prosím všechny povinné údaje (název, popis, priorita).",
         variant: "destructive"
       });
       return;
+    }
+    
+    // Make sure category is set
+    if (!data.category) {
+      // Assign IT as default if category is empty
+      data.category = "IT";
     }
     
     // Make sure all required location IDs are available
@@ -222,11 +228,13 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
     // Prepare the data with IDs instead of names
     const ticketData = {
       ...data,
-      buildingId: selectedBuildingId as number, // Type assertion since we verified these aren't null
-      floorId: selectedFloorId as number,
-      roomId: selectedRoomId as number,
-      areaId: selectedAreaId as number,
-      elementId: selectedElementId as number
+      buildingId: selectedBuildingId, 
+      floorId: selectedFloorId,
+      roomId: selectedRoomId,
+      areaId: selectedAreaId,
+      elementId: selectedElementId,
+      // Ensure category is sent
+      category: data.category || "IT"
     };
     
     console.log("Submitting ticket with IDs:", ticketData);

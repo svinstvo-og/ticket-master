@@ -293,6 +293,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ticketData = req.body;
       }
       
+      console.log("Raw ticket data received:", ticketData);
+      
       // Process any uploaded files and add them to the request body
       const attachments = files?.map(file => ({
         name: file.originalname,
@@ -314,29 +316,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
         initialStatus = ticketData.status || initialStatus;
       }
       
-      // For backward compatibility with the old form
-      // Using the name-based form data to look up IDs from the database
-      const { building, floor, room, area, element, category, priority, ...restTicketData } = ticketData;
-
+      // For backward compatibility with the old form, keep the text values
+      // but ensure the IDs are present which is what really matters
+      const { building, floor, room, area, element, ...restTicketData } = ticketData;
+      
+      // Make sure category is not empty
+      if (!ticketData.category) {
+        ticketData.category = "IT";
+      }
+      
       // Create a compatible object for validation
       const compatibleTicketData = {
         ...restTicketData,
-        // Keep the text values for backward compatibility
+        // Keep the text values for display purposes
         building: building || '',
         floor: floor || '',
         room: room || '',
         area: area || '',
         element: element || '',
-        category: category || '',
-        priority: priority || 'Nízká',
+        // Make sure we have a category and priority
+        category: ticketData.category || 'IT',
+        priority: ticketData.priority || 'Nízká',
         status: initialStatus,
         // Add current user as the creator
         createdBy: req.user.id,
+        // Ensure buildingId and other fields are present
+        buildingId: ticketData.buildingId,
+        floorId: ticketData.floorId,
+        roomId: ticketData.roomId,
+        areaId: ticketData.areaId,
+        elementId: ticketData.elementId,
+        // Include attachments
         attachments: attachments.length > 0 ? attachments : ticketData.attachments
       };
       
+      console.log("Processed ticket data:", compatibleTicketData);
+      
       // Validate the ticket data with the current schema
-      const validTicketData = insertTicketSchema.parse(compatibleTicketData);
+      let validTicketData;
+      try {
+        validTicketData = insertTicketSchema.parse(compatibleTicketData);
+        console.log("Valid ticket data:", validTicketData);
+      } catch (error) {
+        console.error("Validation error:", error);
+        throw error;
+      }
       
       // Create the ticket
       const createdTicket = await storage.createTicket(validTicketData);
