@@ -297,9 +297,9 @@ export default function UserProfilePage() {
                           name="fullName"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Full Name</FormLabel>
+                              <FormLabel>Celé jméno</FormLabel>
                               <FormControl>
-                                <Input placeholder="Enter your full name" {...field} />
+                                <Input placeholder="Zadejte vaše celé jméno" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -313,7 +313,7 @@ export default function UserProfilePage() {
                             <FormItem>
                               <FormLabel>Email</FormLabel>
                               <FormControl>
-                                <Input type="email" placeholder="Enter your email" {...field} />
+                                <Input type="email" placeholder="Zadejte váš email" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -325,9 +325,9 @@ export default function UserProfilePage() {
                           name="department"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Department</FormLabel>
+                              <FormLabel>Oddělení</FormLabel>
                               <FormControl>
-                                <Input placeholder="Enter your department" {...field} />
+                                <Input placeholder="Zadejte vaše oddělení" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -342,7 +342,7 @@ export default function UserProfilePage() {
                           {updateUserMutation.isPending && (
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                           )}
-                          Save Changes
+                          Uložit změny
                         </Button>
                       </form>
                     </Form>
@@ -350,15 +350,15 @@ export default function UserProfilePage() {
                 </div>
                 
                 <div className="mt-6">
-                  <h3 className="text-lg font-medium mb-2">Account Information</h3>
+                  <h3 className="text-lg font-medium mb-2">Informace o účtu</h3>
                   <Separator className="mb-4" />
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Username:</span>
+                      <span className="text-muted-foreground">Uživatelské jméno:</span>
                       <span className="font-medium">{user?.username}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Account Status:</span>
+                      <span className="text-muted-foreground">Stav účtu:</span>
                       <span className="font-medium">
                         {currentUserDetails?.isActive ? (
                           <span className="flex items-center text-green-600">
@@ -372,7 +372,7 @@ export default function UserProfilePage() {
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Created:</span>
+                      <span className="text-muted-foreground">Vytvořeno:</span>
                       <span className="font-medium">
                         {currentUserDetails?.createdAt ? new Date(currentUserDetails.createdAt).toLocaleDateString() : 'N/A'}
                       </span>
@@ -414,12 +414,12 @@ export default function UserProfilePage() {
                       name="newPassword"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>New Password</FormLabel>
+                          <FormLabel>Nové heslo</FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="Enter your new password" {...field} />
+                            <Input type="password" placeholder="Zadejte nové heslo" {...field} />
                           </FormControl>
                           <FormDescription>
-                            Password must be at least 6 characters long
+                            Heslo musí mít alespoň 6 znaků
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -434,7 +434,7 @@ export default function UserProfilePage() {
                       {changePasswordMutation.isPending && (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       )}
-                      Update Password
+                      Aktualizovat heslo
                     </Button>
                   </form>
                 </Form>
@@ -447,16 +447,16 @@ export default function UserProfilePage() {
             <TabsContent value="admin">
               <Card>
                 <CardHeader>
-                  <CardTitle>User Management</CardTitle>
+                  <CardTitle>Správa uživatelů</CardTitle>
                   <CardDescription>
-                    Manage users, roles, and access control
+                    Správa uživatelů, rolí a přístupových oprávnění
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* User List */}
                     <div className="lg:col-span-1 border rounded-lg p-4">
-                      <h3 className="text-lg font-medium mb-4">Users</h3>
+                      <h3 className="text-lg font-medium mb-4">Uživatelé</h3>
                       {isLoadingUsers ? (
                         <div className="flex justify-center py-8">
                           <Loader2 className="h-8 w-8 animate-spin text-primary" />
