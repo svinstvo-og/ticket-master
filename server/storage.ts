@@ -194,8 +194,11 @@ export class DatabaseStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     try {
       const query = `
-        INSERT INTO users (username, password, full_name, email, role, department, is_active)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        INSERT INTO users (
+          username, password, full_name, email, phone, avatar_url, 
+          role, department_id, is_active
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         RETURNING *
       `;
       const values = [
@@ -203,8 +206,10 @@ export class DatabaseStorage implements IStorage {
         insertUser.password,
         insertUser.fullName || '',
         insertUser.email || '',
+        insertUser.phone || null,
+        insertUser.avatarUrl || null,
         insertUser.role || 'user',
-        insertUser.department || '',
+        insertUser.departmentId || null,
         insertUser.isActive !== undefined ? insertUser.isActive : true
       ];
       const result = await pool.query(query, values);
@@ -237,9 +242,19 @@ export class DatabaseStorage implements IStorage {
         values.push(userUpdate.role);
       }
 
-      if (userUpdate.department !== undefined) {
-        setFields.push(`department = $${paramIndex++}`);
-        values.push(userUpdate.department);
+      if (userUpdate.departmentId !== undefined) {
+        setFields.push(`department_id = $${paramIndex++}`);
+        values.push(userUpdate.departmentId);
+      }
+
+      if (userUpdate.phone !== undefined) {
+        setFields.push(`phone = $${paramIndex++}`);
+        values.push(userUpdate.phone);
+      }
+
+      if (userUpdate.avatarUrl !== undefined) {
+        setFields.push(`avatar_url = $${paramIndex++}`);
+        values.push(userUpdate.avatarUrl);
       }
 
       if (userUpdate.isActive !== undefined) {

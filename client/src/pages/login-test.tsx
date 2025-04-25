@@ -1,116 +1,121 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { useLocation } from 'wouter';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
 
 export default function LoginTest() {
+  const { loginMutation, user, logoutMutation } = useAuth();
   const [username, setUsername] = useState('admin');
   const [password, setPassword] = useState('password123');
-  const { user, loginMutation, logoutMutation } = useAuth();
-  const [, navigate] = useLocation();
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-  const handleLogin = async () => {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    
     try {
       await loginMutation.mutateAsync({ username, password });
-    } catch (error) {
-      console.error('Login error:', error);
+      setSuccess('Login successful!');
+    } catch (err: any) {
+      setError(err.message || 'Login failed');
     }
   };
 
-  const handleLogout = () => {
-    logoutMutation.mutate();
-  };
-
-  const goToTickets = () => {
-    navigate('/tickets');
+  const handleLogout = async () => {
+    setError('');
+    setSuccess('');
+    
+    try {
+      await logoutMutation.mutateAsync();
+      setSuccess('Logout successful!');
+    } catch (err: any) {
+      setError(err.message || 'Logout failed');
+    }
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
-      <div className="max-w-md w-full space-y-8 bg-white p-6 rounded-lg shadow-md">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-primary">Test přihlášení</h2>
-          <p className="mt-2 text-gray-600">
-            Tato stránka je určena k testování funkce přihlášení
-          </p>
-        </div>
-
-        {user ? (
-          <div className="space-y-6">
-            <div className="bg-green-50 p-4 rounded-md border border-green-200">
-              <h3 className="text-lg font-medium text-green-800">Přihlášen!</h3>
-              <div className="mt-2">
-                <p><strong>Uživatel:</strong> {user.username}</p>
-                <p><strong>Role:</strong> {user.role}</p>
-                <p><strong>ID:</strong> {user.id}</p>
-              </div>
-            </div>
-            <div className="flex flex-col space-y-3">
-              <Button onClick={goToTickets}>
-                Přejít na tikety
-              </Button>
-              <Button variant="outline" onClick={handleLogout}>
-                Odhlásit se
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-6">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Login Test Page</CardTitle>
+          <CardDescription>Testing authentication system</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          
+          {success && (
+            <Alert className="mb-4 bg-green-50 text-green-800 border-green-200">
+              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <AlertTitle>Success</AlertTitle>
+              <AlertDescription>{success}</AlertDescription>
+            </Alert>
+          )}
+          
+          {user ? (
             <div className="space-y-4">
-              <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                  Uživatelské jméno
-                </label>
+              <div className="p-4 bg-gray-100 rounded-lg">
+                <h3 className="font-bold">Currently logged in as:</h3>
+                <p className="text-sm mt-1">Username: {user.username}</p>
+                <p className="text-sm">Role: {user.role}</p>
+                <p className="text-sm">ID: {user.id}</p>
+              </div>
+              <Button onClick={handleLogout} className="w-full bg-red-500 hover:bg-red-600">
+                Logout
+              </Button>
+            </div>
+          ) : (
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="username">Username</Label>
                 <Input
                   id="username"
-                  type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Uživatelské jméno"
-                  className="mt-1"
+                  placeholder="Enter username"
                 />
               </div>
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Heslo
-                </label>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Heslo"
-                  className="mt-1"
+                  placeholder="Enter password"
                 />
               </div>
-            </div>
-            <Button
-              className="w-full"
-              onClick={handleLogin}
-              disabled={loginMutation.isPending}
-            >
-              {loginMutation.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Přihlašování...
-                </>
-              ) : (
-                "Přihlásit se"
-              )}
-            </Button>
-          </div>
-        )}
-
-        <div className="mt-4 text-center text-sm text-gray-500">
-          <p>
-            Výchozí přihlašovací údaje: <br />
-            Uživatelské jméno: <strong>admin</strong> <br />
-            Heslo: <strong>password123</strong>
-          </p>
-        </div>
-      </div>
+              <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
+                {loginMutation.isPending ? 'Logging in...' : 'Login'}
+              </Button>
+              
+              <div className="text-sm text-gray-500 mt-4">
+                <p>Default credentials:</p>
+                <ul className="list-disc pl-5 mt-1">
+                  <li>Admin: admin/password123</li>
+                  <li>Manager: manager/password123</li>
+                  <li>Technician: technician/password123</li>
+                  <li>User: user/password123</li>
+                </ul>
+              </div>
+            </form>
+          )}
+        </CardContent>
+        <CardFooter className="flex justify-center text-sm text-gray-500">
+          Authentication testing page
+        </CardFooter>
+      </Card>
     </div>
   );
 }

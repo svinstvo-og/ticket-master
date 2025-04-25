@@ -79,10 +79,20 @@ export function setupAuth(app: Express) {
       return res.status(400).send("Username already exists");
     }
 
-    const user = await storage.createUser({
-      ...req.body,
+    // Transform the request to match our schema
+    const userData = {
+      username: req.body.username,
       password: await hashPassword(req.body.password),
-    });
+      fullName: req.body.fullName,
+      email: req.body.email,
+      phone: req.body.phone,
+      avatarUrl: req.body.avatarUrl,
+      role: req.body.role,
+      departmentId: req.body.departmentId,
+      isActive: req.body.isActive
+    };
+    
+    const user = await storage.createUser(userData);
 
     req.login(user, (err) => {
       if (err) return next(err);
