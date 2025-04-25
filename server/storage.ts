@@ -618,5 +618,25 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-// Use database storage instead of memory storage
-export const storage = new DatabaseStorage();
+// Try to use database storage, but fall back to memory storage if there are issues
+let storage: IStorage;
+
+try {
+  // Test database connection
+  pool.query('SELECT NOW()').then(() => {
+    console.log('Connected to the database successfully');
+    storage = new DatabaseStorage();
+  }).catch(err => {
+    console.error('Database connection failed:', err);
+    console.log('Falling back to memory storage');
+    storage = new MemStorage();
+  });
+  
+  // Initialize with memory storage until the database check completes
+  storage = new MemStorage();
+} catch (error) {
+  console.error('Error initializing database:', error);
+  storage = new MemStorage();
+}
+
+export { storage };
