@@ -174,9 +174,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create a new ticket
+  // Create a new ticket (user must be authenticated)
   app.post("/api/tickets", upload.array("attachments"), async (req: Request, res: Response) => {
     try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
       // Parse the request body according to the schema
       const files = req.files as Express.Multer.File[] | undefined;
       
@@ -195,10 +199,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         size: file.size,
         data: file.buffer.toString('base64')
       })) || [];
+
+      // Set default status based on role
+      let initialStatus = 'Otevřený'; // Default status "Open"
+      
+      // If current user is a manager, they can create pre-approved tickets
+      if (req.user.role === 'manager') {
+        initialStatus = ticketData.status || initialStatus;
+      }
+
+      // If current user is a technician, they can create tickets with special status
+      if (req.user.role === 'technician') {
+        initialStatus = ticketData.status || initialStatus;
+      }
       
       // Validate the ticket data
       const validTicketData = insertTicketSchema.parse({
         ...ticketData,
+        status: initialStatus,
         attachments: attachments.length > 0 ? attachments : ticketData.attachments
       });
       
@@ -233,6 +251,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Ticket not found" });
       }
 
+      // Extract the JSON data from the form data
+      let ticketData;
+      try {
+        ticketData = JSON.parse(req.body.ticketData);
+      } catch (e) {
+        ticketData = req.body;
+      }
+
       // Check role-based permissions for updates
       if (req.user?.role === 'user') {
         // Regular users: limited modifications, can't change status/assignment
@@ -254,14 +280,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       // Admins have full access
-      
-      // Extract the JSON data from the form data
-      let ticketData;
-      try {
-        ticketData = JSON.parse(req.body.ticketData);
-      } catch (e) {
-        ticketData = req.body;
-      }
       
       // Process any uploaded files and add them to the request body
       const files = req.files as Express.Multer.File[] | undefined;
@@ -296,8 +314,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete a ticket
-  app.delete("/api/tickets/:id", async (req: Request, res: Response) => {
+  // Delete a ticket (admin only)
+  app.delete("/api/tickets/:id", isAdmin, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
