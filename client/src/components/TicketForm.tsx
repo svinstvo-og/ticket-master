@@ -33,70 +33,259 @@ import PrioritySelector from "./PrioritySelector";
 import FileUpload from "./FileUpload";
 import Alert from "./Alert";
 
-// Define types for the building data structure
-interface RoomsByFloor {
-  [floor: string]: string[];
+// Define types for the cascading dropdown structure
+interface ElementType {
+  name: string;
 }
 
-interface BuildingInfo {
-  floors: string[];
-  rooms: RoomsByFloor;
+interface AreaType {
+  name: string;
+  elements: ElementType[];
 }
 
-interface BuildingDataType {
-  [building: string]: BuildingInfo;
+interface RoomType {
+  name: string;
+  areas: AreaType[];
 }
 
-// Define types for area and element data
-interface AreaElementsType {
-  [area: string]: string[];
+interface FloorType {
+  name: string;
+  rooms: RoomType[];
 }
 
-// Data for dependent dropdowns - buildings
-const buildingData: BuildingDataType = {
-  "Building A": {
-    floors: ["Přízemí", "1. patro", "2. patro"],
-    rooms: {
-      "Přízemí": ["A001 - Recepce", "A002 - Lobby", "A003 - Zasedací místnost"],
-      "1. patro": ["A101 - Kancelář", "A102 - Zasedací místnost", "A103 - Kuchyňka"],
-      "2. patro": ["A201 - Kancelář", "A202 - Zasedací místnost", "A203 - Technická místnost"],
-    }
+interface BuildingType {
+  name: string;
+  floors: FloorType[];
+}
+
+// Full cascading data structure for dependent dropdowns
+const cascadingData: BuildingType[] = [
+  {
+    name: "Building A",
+    floors: [
+      {
+        name: "Přízemí",
+        rooms: [
+          {
+            name: "A001 - Recepce",
+            areas: [
+              {
+                name: "Klimatizační a ventilační systémy",
+                elements: [
+                  { name: "Klimatizace 1" },
+                  { name: "Ventilace A" }
+                ]
+              },
+              {
+                name: "Elektroinstalace",
+                elements: [
+                  { name: "Osvětlení" },
+                  { name: "Zásuvkové okruhy" }
+                ]
+              }
+            ]
+          },
+          {
+            name: "A002 - Lobby",
+            areas: [
+              {
+                name: "Výtahy",
+                elements: [
+                  { name: "Výtah 1" },
+                  { name: "Výtah 2" }
+                ]
+              },
+              {
+                name: "Elektroinstalace",
+                elements: [
+                  { name: "Hlavní rozvaděč" },
+                  { name: "Osvětlení" }
+                ]
+              }
+            ]
+          },
+          {
+            name: "A003 - Zasedací místnost",
+            areas: [
+              {
+                name: "Klimatizační a ventilační systémy",
+                elements: [
+                  { name: "Klimatizace 2" }
+                ]
+              },
+              {
+                name: "Vodoinstalace",
+                elements: [
+                  { name: "Rozvody vody" }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        name: "1. patro",
+        rooms: [
+          {
+            name: "A101 - Kancelář",
+            areas: [
+              {
+                name: "Klimatizační a ventilační systémy",
+                elements: [
+                  { name: "Klimatizace 1" }
+                ]
+              },
+              {
+                name: "Elektroinstalace",
+                elements: [
+                  { name: "Osvětlení" },
+                  { name: "Zásuvkové okruhy" }
+                ]
+              }
+            ]
+          },
+          {
+            name: "A102 - Zasedací místnost",
+            areas: [
+              {
+                name: "Klimatizační a ventilační systémy",
+                elements: [
+                  { name: "Klimatizace 2" }
+                ]
+              }
+            ]
+          },
+          {
+            name: "A103 - Kuchyňka",
+            areas: [
+              {
+                name: "Vodoinstalace",
+                elements: [
+                  { name: "Rozvody vody" },
+                  { name: "Odpadní systém" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
   },
-  "Building B": {
-    floors: ["Přízemí", "1. patro", "2. patro", "3. patro"],
-    rooms: {
-      "Přízemí": ["B001 - Jídelna", "B002 - Sklad", "B003 - Kancelář"],
-      "1. patro": ["B101 - Kancelář", "B102 - Zasedací místnost", "B103 - Laboratoř"],
-      "2. patro": ["B201 - Kancelář", "B202 - Serverovna", "B203 - Odpočinková zóna"],
-      "3. patro": ["B301 - Kancelář", "B302 - Zasedací místnost", "B303 - Archiv"],
-    }
+  {
+    name: "Building B",
+    floors: [
+      {
+        name: "Přízemí",
+        rooms: [
+          {
+            name: "B001 - Jídelna",
+            areas: [
+              {
+                name: "Klimatizační a ventilační systémy",
+                elements: [
+                  { name: "Ventilace B" }
+                ]
+              },
+              {
+                name: "Vodoinstalace",
+                elements: [
+                  { name: "Sanitární zařízení" }
+                ]
+              }
+            ]
+          },
+          {
+            name: "B002 - Sklad",
+            areas: [
+              {
+                name: "Výtahy",
+                elements: [
+                  { name: "Nákladní výtah" }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        name: "1. patro",
+        rooms: [
+          {
+            name: "B101 - Kancelář",
+            areas: [
+              {
+                name: "Klimatizační a ventilační systémy",
+                elements: [
+                  { name: "Klimatizace 1" }
+                ]
+              }
+            ]
+          },
+          {
+            name: "B102 - Zasedací místnost",
+            areas: [
+              {
+                name: "Elektroinstalace",
+                elements: [
+                  { name: "Osvětlení" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
   },
-  "Building C": {
-    floors: ["Přízemí", "1. patro", "2. patro", "3. patro", "4. patro"],
-    rooms: {
-      "Přízemí": ["C001 - Recepce", "C002 - Bezpečnostní místnost", "C003 - Jídelna"],
-      "1. patro": ["C101 - Showroom", "C102 - Kancelář", "C103 - Zasedací místnost"],
-      "2. patro": ["C201 - Kancelář", "C202 - Zasedací místnost", "C203 - Kuchyňka"],
-      "3. patro": ["C301 - Kancelář", "C302 - Technická místnost", "C303 - Laboratoř"],
-      "4. patro": ["C401 - Kancelář", "C402 - Zasedací místnost", "C403 - Relaxační zóna"],
-    }
-  },
-  "Building D": {
-    floors: ["Přízemí", "1. patro"],
-    rooms: {
-      "Přízemí": ["D001 - Výrobní hala", "D002 - Sklad", "D003 - Šatny"],
-      "1. patro": ["D101 - Kancelář", "D102 - Zasedací místnost", "D103 - Kontrolní místnost"],
-    }
+  {
+    name: "Building C",
+    floors: [
+      {
+        name: "Přízemí",
+        rooms: [
+          {
+            name: "C001 - Recepce",
+            areas: [
+              {
+                name: "Výtahy",
+                elements: [
+                  { name: "Výtah 1" },
+                  { name: "Výtah 2" }
+                ]
+              }
+            ]
+          },
+          {
+            name: "C002 - Bezpečnostní místnost",
+            areas: [
+              {
+                name: "Elektroinstalace",
+                elements: [
+                  { name: "Záložní zdroj" }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        name: "1. patro",
+        rooms: [
+          {
+            name: "C101 - Showroom",
+            areas: [
+              {
+                name: "Klimatizační a ventilační systémy",
+                elements: [
+                  { name: "Klimatizace 2" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
   }
-};
-
-// Data for dependent dropdowns - areas and elements
-const areaElementsData: AreaElementsType = {
-  "Výtahy": ["Výtah 1", "Výtah 2", "Nákladní výtah", "Jídelní výtah"],
-  "Klimatizační a ventilační systémy": ["Klimatizace 1", "Klimatizace 2", "Ventilace A", "Ventilace B", "Chlazení serverovny"],
-  "Elektroinstalace": ["Hlavní rozvaděč", "Osvětlení", "Zásuvkové okruhy", "Záložní zdroj"],
-  "Vodoinstalace": ["Rozvody vody", "Sanitární zařízení", "Sprchy", "Odpadní systém"]
-};
+];
 
 // Extend the schema with additional validation
 const formSchema = insertTicketSchema.extend({});
@@ -120,9 +309,11 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
   });
   
   // State for the dependent dropdowns
-  const [selectedArea, setSelectedArea] = useState<string>("");
   const [selectedBuilding, setSelectedBuilding] = useState<string>("");
   const [selectedFloor, setSelectedFloor] = useState<string>("");
+  const [selectedRoom, setSelectedRoom] = useState<string>("");
+  const [selectedArea, setSelectedArea] = useState<string>("");
+  const [selectedElement, setSelectedElement] = useState<string>("");
   
   const { toast } = useToast();
 
@@ -199,10 +390,15 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
     form.setValue("building", value);
     setSelectedBuilding(value);
     
-    // Reset floor and room when building changes
+    // Reset dependent fields
     form.setValue("floor", "");
     form.setValue("room", "");
+    form.setValue("area", "");
+    form.setValue("element", "");
     setSelectedFloor("");
+    setSelectedRoom("");
+    setSelectedArea("");
+    setSelectedElement("");
   };
   
   // Handle floor selection change
@@ -211,8 +407,26 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
     form.setValue("floor", value);
     setSelectedFloor(value);
     
-    // Reset room when floor changes
+    // Reset dependent fields
     form.setValue("room", "");
+    form.setValue("area", "");
+    form.setValue("element", "");
+    setSelectedRoom("");
+    setSelectedArea("");
+    setSelectedElement("");
+  };
+  
+  // Handle room selection change
+  const handleRoomChange = (value: string) => {
+    // Update room field
+    form.setValue("room", value);
+    setSelectedRoom(value);
+    
+    // Reset dependent fields
+    form.setValue("area", "");
+    form.setValue("element", "");
+    setSelectedArea("");
+    setSelectedElement("");
   };
   
   // Handle area selection change
@@ -223,6 +437,14 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
     
     // Reset element when area changes
     form.setValue("element", "");
+    setSelectedElement("");
+  };
+  
+  // Handle element selection change
+  const handleElementChange = (value: string) => {
+    // Update element field
+    form.setValue("element", value);
+    setSelectedElement(value);
   };
   
   // QR scanner handlers
@@ -257,7 +479,9 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
     setShowQrScanner(false);
     setSelectedBuilding("");
     setSelectedFloor("");
+    setSelectedRoom("");
     setSelectedArea("");
+    setSelectedElement("");
   };
 
   return (
@@ -433,10 +657,11 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Building A">Budova A</SelectItem>
-                          <SelectItem value="Building B">Budova B</SelectItem>
-                          <SelectItem value="Building C">Budova C</SelectItem>
-                          <SelectItem value="Building D">Budova D</SelectItem>
+                          {cascadingData.map((building) => (
+                            <SelectItem key={building.name} value={building.name}>
+                              {building.name.replace("Building ", "Budova ")}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -464,9 +689,9 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
                         </FormControl>
                         <SelectContent>
                           {selectedBuilding && 
-                            buildingData[selectedBuilding as keyof typeof buildingData]?.floors.map((floor) => (
-                              <SelectItem key={floor} value={floor}>
-                                {floor}
+                            cascadingData.find(b => b.name === selectedBuilding)?.floors.map((floor) => (
+                              <SelectItem key={floor.name} value={floor.name}>
+                                {floor.name}
                               </SelectItem>
                             ))
                           }
@@ -489,7 +714,9 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
                     <FormItem>
                       <FormLabel>Místnost *</FormLabel>
                       <Select
-                        onValueChange={field.onChange}
+                        onValueChange={(value) => {
+                          handleRoomChange(value);
+                        }}
                         value={field.value}
                         disabled={!selectedBuilding || !selectedFloor}
                       >
@@ -500,14 +727,13 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
                         </FormControl>
                         <SelectContent>
                           {selectedBuilding && selectedFloor && 
-                            (buildingData[selectedBuilding] && 
-                             buildingData[selectedBuilding].rooms[selectedFloor] ?
-                               buildingData[selectedBuilding].rooms[selectedFloor].map((room: string) => (
-                                 <SelectItem key={room} value={room}>
-                                   {room}
-                                 </SelectItem>
-                               ))
-                             : null)
+                            cascadingData.find(b => b.name === selectedBuilding)
+                            ?.floors.find(f => f.name === selectedFloor)
+                            ?.rooms.map((room) => (
+                              <SelectItem key={room.name} value={room.name}>
+                                {room.name}
+                              </SelectItem>
+                            ))
                           }
                         </SelectContent>
                       </Select>
@@ -532,6 +758,7 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
                           handleAreaChange(value);
                         }}
                         value={field.value}
+                        disabled={!selectedBuilding || !selectedFloor || !selectedRoom}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -539,14 +766,24 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {Object.keys(areaElementsData).map((area) => (
-                            <SelectItem key={area} value={area}>
-                              {area}
-                            </SelectItem>
-                          ))}
+                          {selectedBuilding && selectedFloor && selectedRoom && 
+                            cascadingData.find(b => b.name === selectedBuilding)
+                            ?.floors.find(f => f.name === selectedFloor)
+                            ?.rooms.find(r => r.name === selectedRoom)
+                            ?.areas.map((area) => (
+                              <SelectItem key={area.name} value={area.name}>
+                                {area.name}
+                              </SelectItem>
+                            ))
+                          }
                         </SelectContent>
                       </Select>
                       <FormMessage />
+                      {!selectedRoom && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Nejdříve vyberte místnost
+                        </p>
+                      )}
                     </FormItem>
                   )}
                 />
@@ -558,9 +795,11 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
                     <FormItem>
                       <FormLabel>Prvek *</FormLabel>
                       <Select
-                        onValueChange={field.onChange}
+                        onValueChange={(value) => {
+                          handleElementChange(value);
+                        }}
                         value={field.value}
-                        disabled={!selectedArea} // Disable until an area is selected
+                        disabled={!selectedBuilding || !selectedFloor || !selectedRoom || !selectedArea}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -568,10 +807,14 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {selectedArea && areaElementsData[selectedArea] && 
-                            areaElementsData[selectedArea].map((element) => (
-                              <SelectItem key={element} value={element}>
-                                {element}
+                          {selectedBuilding && selectedFloor && selectedRoom && selectedArea && 
+                            cascadingData.find(b => b.name === selectedBuilding)
+                            ?.floors.find(f => f.name === selectedFloor)
+                            ?.rooms.find(r => r.name === selectedRoom)
+                            ?.areas.find(a => a.name === selectedArea)
+                            ?.elements.map((element) => (
+                              <SelectItem key={element.name} value={element.name}>
+                                {element.name}
                               </SelectItem>
                             ))
                           }
