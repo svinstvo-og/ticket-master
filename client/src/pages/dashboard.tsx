@@ -153,7 +153,6 @@ export default function Dashboard() {
     Nízká: tickets.filter((t) => t.priority === "Nízká").length,
     Střední: tickets.filter((t) => t.priority === "Střední").length,
     Vysoká: tickets.filter((t) => t.priority === "Vysoká").length,
-    Kritická: tickets.filter((t) => t.priority === "Kritická").length,
   };
 
   const getPriorityColor = (priority: string) => {
@@ -164,8 +163,6 @@ export default function Dashboard() {
         return "bg-blue-100 text-blue-800";
       case "Vysoká":
         return "bg-orange-100 text-orange-800";
-      case "Kritická":
-        return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -308,10 +305,6 @@ export default function Dashboard() {
                   <div className="flex justify-between items-center">
                     <span>Vysoká</span>
                     <Badge variant="outline">{priorityCounts.Vysoká}</Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Kritická</span>
-                    <Badge variant="outline">{priorityCounts.Kritická}</Badge>
                   </div>
                 </div>
               </CardContent>
