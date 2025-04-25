@@ -341,14 +341,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Add current user as the creator
         createdBy: req.user.id,
         // Ensure buildingId and other fields are present
-        buildingId: ticketData.buildingId,
-        floorId: ticketData.floorId,
-        roomId: ticketData.roomId,
-        areaId: ticketData.areaId,
-        elementId: ticketData.elementId,
+        buildingId: parseInt(ticketData.buildingId) || 1,
+        floorId: parseInt(ticketData.floorId) || 1,
+        roomId: parseInt(ticketData.roomId) || 1,
+        areaId: parseInt(ticketData.areaId) || 1,
+        elementId: parseInt(ticketData.elementId) || 1,
         // Include attachments
         attachments: attachments.length > 0 ? attachments : ticketData.attachments
       };
+      
+      // Log what's being saved
+      console.log("Saving ticket with the following data:", {
+        title: compatibleTicketData.title,
+        description: compatibleTicketData.description,
+        category: compatibleTicketData.category,
+        priority: compatibleTicketData.priority,
+        status: compatibleTicketData.status,
+        createdBy: compatibleTicketData.createdBy,
+        buildingId: compatibleTicketData.buildingId,
+        floorId: compatibleTicketData.floorId,
+        roomId: compatibleTicketData.roomId,
+        areaId: compatibleTicketData.areaId,
+        elementId: compatibleTicketData.elementId,
+        attachments: attachments.length > 0 ? `${attachments.length} attachments` : "no attachments"
+      });
       
       console.log("Processed ticket data:", compatibleTicketData);
       

@@ -12,12 +12,30 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const res = await fetch(url, {
+  // Create the fetch options
+  const options: RequestInit = {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
-    body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
+  };
+
+  // Handle different data types (FormData vs. JSON)
+  if (data) {
+    if (data instanceof FormData) {
+      // For FormData, don't set Content-Type as the browser will set it with the boundary
+      options.body = data;
+    } else {
+      options.headers = { "Content-Type": "application/json" };
+      options.body = JSON.stringify(data);
+    }
+  }
+
+  // Log the request for debugging
+  console.log(`API request to ${url} with options:`, {
+    method,
+    dataType: data instanceof FormData ? "FormData" : typeof data,
   });
+
+  const res = await fetch(url, options);
 
   await throwIfResNotOk(res);
   return res;
