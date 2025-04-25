@@ -338,32 +338,47 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
   // Submit handler
   const ticketMutation = useMutation({
     mutationFn: async (data: TicketFormValues) => {
+      console.log("Starting ticket submission with data:", data);
+      
       // Create FormData for file upload
       const formData = new FormData();
 
-      // Convert attachments to files
-      if (data.attachments && Array.isArray(data.attachments)) {
-        // Remove attachments from the ticket data temporarily
-        const ticketData = { ...data };
-        delete ticketData.attachments;
+      try {
+        // Convert attachments to files
+        if (data.attachments && Array.isArray(data.attachments)) {
+          // Remove attachments from the ticket data temporarily
+          const ticketData = { ...data };
+          delete ticketData.attachments;
 
-        // Add JSON data
-        formData.append("ticketData", JSON.stringify(ticketData));
+          // Log the final ticket data for debugging
+          console.log("Final ticket data:", ticketData);
+          
+          // Add JSON data
+          formData.append("ticketData", JSON.stringify(ticketData));
 
-        // Add files
-        if (data.attachments.length > 0) {
-          data.attachments.forEach((file) => {
-            if (file instanceof File) {
-              formData.append("attachments", file);
-            }
-          });
+          // Add files
+          if (data.attachments.length > 0) {
+            data.attachments.forEach((file) => {
+              if (file instanceof File) {
+                formData.append("attachments", file);
+              }
+            });
+          }
+        } else {
+          console.log("No attachments in form data");
+          formData.append("ticketData", JSON.stringify(data));
         }
-      } else {
-        formData.append("ticketData", JSON.stringify(data));
-      }
 
-      const response = await apiRequest("POST", "/api/tickets", formData);
-      return response.json();
+        // Log the form data contents
+        console.log("Submitting form data:", [...formData.entries()]);
+        
+        const response = await apiRequest("POST", "/api/tickets", formData);
+        console.log("Server response:", response);
+        return response.json();
+      } catch (error) {
+        console.error("Error in mutationFn:", error);
+        throw error;
+      }
     },
     onSuccess: () => {
       form.reset();
@@ -381,6 +396,9 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
   });
 
   function onSubmit(data: TicketFormValues) {
+    console.log("Form submitted with data:", data);
+    
+    // Need to handle createdBy, which should come from the server
     ticketMutation.mutate(data);
   }
 
@@ -883,7 +901,12 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
               <Button type="button" variant="outline" onClick={resetForm}>
                 Resetovat
               </Button>
-              <Button type="submit" disabled={ticketMutation.isPending}>
+              <Button 
+                type="submit" 
+                disabled={ticketMutation.isPending}
+                onClick={() => console.log("Submit button clicked", form.getValues())}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
                 {ticketMutation.isPending ? "Odesílání..." : "Odeslat Tiket"}
               </Button>
             </div>
