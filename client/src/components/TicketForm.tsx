@@ -459,12 +459,12 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
               </div>
             </div>
 
-            {/* Assignment Section */}
+            {/* Priority Section */}
             <div>
               <h2 className="text-lg font-medium text-gray-900 mb-4">
-                Informace o Přiřazení
+                Priorita
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <FormField
                   control={form.control}
                   name="priority"
@@ -477,69 +477,6 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
                           onChange={field.onChange}
                         />
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-
-
-                <FormField
-                  control={form.control}
-                  name="employeeAssigned"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Přiřazený Zaměstnanec *</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Vyberte zaměstnance" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="John Doe">John Doe</SelectItem>
-                          <SelectItem value="Jane Smith">Jane Smith</SelectItem>
-                          <SelectItem value="Alex Johnson">
-                            Alex Johnson
-                          </SelectItem>
-                          <SelectItem value="Sam Wilson">Sam Wilson</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="manager"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Manažer *</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Vyberte manažera" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Michael Scott">
-                            Michael Scott
-                          </SelectItem>
-                          <SelectItem value="David Wallace">
-                            David Wallace
-                          </SelectItem>
-                          <SelectItem value="Jan Levinson">
-                            Jan Levinson
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}

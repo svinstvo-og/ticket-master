@@ -71,13 +71,23 @@ export class MemStorage implements IStorage {
   async createTicket(insertTicket: InsertTicket): Promise<Ticket> {
     const id = this.ticketCurrentId++;
     const createdAt = new Date();
+    
+    // Set default values for optional fields
+    const status = insertTicket.status || 'Otevřený';
+    const employeeAssigned = insertTicket.employeeAssigned || '';
+    const manager = insertTicket.manager || '';
+    
     // Ensure attachments is always an array, even if undefined
     const attachments = insertTicket.attachments || [];
+    
     const ticket: Ticket = { 
       ...insertTicket, 
       id, 
       createdAt,
-      attachments 
+      attachments,
+      status,
+      employeeAssigned,
+      manager
     };
     this.tickets.set(id, ticket);
     return ticket;

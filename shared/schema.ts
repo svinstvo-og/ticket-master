@@ -14,16 +14,24 @@ export const tickets = pgTable("tickets", {
   area: text("area").notNull(), // Oblast (Area) field
   element: text("element").notNull(), // Prvek (Element) field
   priority: text("priority").notNull(),
-  employeeAssigned: text("employee_assigned").notNull(),
-  manager: text("manager").notNull(),
-  status: text("status").notNull(),
+  employeeAssigned: text("employee_assigned").default(''), // Optional, set by admin in dashboard
+  manager: text("manager").default(''), // Optional, set by admin in dashboard
+  status: text("status").default('Otevřený'), // Default status for new tickets
   attachments: json("attachments").default('[]'),
   createdAt: timestamp("created_at").defaultNow()
 });
 
-export const insertTicketSchema = createInsertSchema(tickets).omit({
+// Create a base schema from the tickets table
+const baseSchema = createInsertSchema(tickets).omit({
   id: true,
   createdAt: true
+});
+
+// Customize it to make manager, employeeAssigned, and status optional
+export const insertTicketSchema = baseSchema.extend({
+  employeeAssigned: z.string().optional(),
+  manager: z.string().optional(),
+  status: z.string().optional()
 });
 
 export type InsertTicket = z.infer<typeof insertTicketSchema>;
