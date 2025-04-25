@@ -16,6 +16,8 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Set up authentication routes
+  setupAuth(app);
   // Get all tickets
   app.get("/api/tickets", async (req: Request, res: Response) => {
     try {
