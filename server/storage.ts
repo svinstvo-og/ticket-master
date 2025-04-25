@@ -1,8 +1,16 @@
 import { tickets, type Ticket, type InsertTicket, users, type User, type InsertUser, type UpdateUser } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
+import { Pool } from 'pg';
+import connectPg from "connect-pg-simple";
 
 const MemoryStore = createMemoryStore(session);
+const PostgresSessionStore = connectPg(session);
+
+// Create a PostgreSQL client
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
 
 // modify the interface with any CRUD methods
 // you might need
@@ -152,4 +160,306 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  sessionStore: any;
+
+  constructor() {
+    this.sessionStore = new PostgresSessionStore({
+      pool,
+      createTableIfMissing: true
+    });
+  }
+
+  // User methods
+  async getUser(id: number): Promise<User | undefined> {
+    try {
+      const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+      return result.rows[0] || undefined;
+    } catch (error) {
+      console.error('Error getting user:', error);
+      return undefined;
+    }
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    try {
+      const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+      return result.rows[0] || undefined;
+    } catch (error) {
+      console.error('Error getting user by username:', error);
+      return undefined;
+    }
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    try {
+      const query = `
+        INSERT INTO users (username, password, full_name, email, role, department, is_active)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING *
+      `;
+      const values = [
+        insertUser.username,
+        insertUser.password,
+        insertUser.fullName || '',
+        insertUser.email || '',
+        insertUser.role || 'user',
+        insertUser.department || '',
+        insertUser.isActive !== undefined ? insertUser.isActive : true
+      ];
+      const result = await pool.query(query, values);
+      return result.rows[0];
+    } catch (error) {
+      console.error('Error creating user:', error);
+      throw error;
+    }
+  }
+
+  async updateUser(id: number, userUpdate: Partial<UpdateUser>): Promise<User | undefined> {
+    try {
+      // Build dynamic query based on which fields are provided
+      const setFields = [];
+      const values = [];
+      let paramIndex = 1;
+
+      if (userUpdate.fullName !== undefined) {
+        setFields.push(`full_name = $${paramIndex++}`);
+        values.push(userUpdate.fullName);
+      }
+
+      if (userUpdate.email !== undefined) {
+        setFields.push(`email = $${paramIndex++}`);
+        values.push(userUpdate.email);
+      }
+
+      if (userUpdate.role !== undefined) {
+        setFields.push(`role = $${paramIndex++}`);
+        values.push(userUpdate.role);
+      }
+
+      if (userUpdate.department !== undefined) {
+        setFields.push(`department = $${paramIndex++}`);
+        values.push(userUpdate.department);
+      }
+
+      if (userUpdate.isActive !== undefined) {
+        setFields.push(`is_active = $${paramIndex++}`);
+        values.push(userUpdate.isActive);
+      }
+
+      if (setFields.length === 0) {
+        return this.getUser(id); // Nothing to update
+      }
+
+      values.push(id); // Add id as the last parameter
+
+      const query = `
+        UPDATE users
+        SET ${setFields.join(', ')}
+        WHERE id = $${paramIndex}
+        RETURNING *
+      `;
+
+      const result = await pool.query(query, values);
+      return result.rows[0] || undefined;
+    } catch (error) {
+      console.error('Error updating user:', error);
+      return undefined;
+    }
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    try {
+      const result = await pool.query('SELECT * FROM users');
+      return result.rows;
+    } catch (error) {
+      console.error('Error getting all users:', error);
+      return [];
+    }
+  }
+
+  async updatePassword(id: number, newPassword: string): Promise<boolean> {
+    try {
+      const query = 'UPDATE users SET password = $1 WHERE id = $2';
+      const result = await pool.query(query, [newPassword, id]);
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error('Error updating password:', error);
+      return false;
+    }
+  }
+
+  async deactivateUser(id: number): Promise<boolean> {
+    try {
+      const query = 'UPDATE users SET is_active = false WHERE id = $1';
+      const result = await pool.query(query, [id]);
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error('Error deactivating user:', error);
+      return false;
+    }
+  }
+
+  // Ticket methods
+  async getTickets(): Promise<Ticket[]> {
+    try {
+      const result = await pool.query('SELECT * FROM tickets ORDER BY created_at DESC');
+      return result.rows;
+    } catch (error) {
+      console.error('Error getting tickets:', error);
+      return [];
+    }
+  }
+
+  async getTicket(id: number): Promise<Ticket | undefined> {
+    try {
+      const result = await pool.query('SELECT * FROM tickets WHERE id = $1', [id]);
+      return result.rows[0] || undefined;
+    } catch (error) {
+      console.error('Error getting ticket:', error);
+      return undefined;
+    }
+  }
+
+  async createTicket(insertTicket: InsertTicket): Promise<Ticket> {
+    try {
+      const query = `
+        INSERT INTO tickets (
+          title, description, category, building, floor, room, area, element, 
+          priority, employee_assigned, manager, status, attachments
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+        RETURNING *
+      `;
+      
+      const values = [
+        insertTicket.title,
+        insertTicket.description,
+        insertTicket.category,
+        insertTicket.building,
+        insertTicket.floor,
+        insertTicket.room,
+        insertTicket.area,
+        insertTicket.element,
+        insertTicket.priority,
+        insertTicket.employeeAssigned || '',
+        insertTicket.manager || '',
+        insertTicket.status || 'Otevřený',
+        JSON.stringify(insertTicket.attachments || [])
+      ];
+      
+      const result = await pool.query(query, values);
+      return result.rows[0];
+    } catch (error) {
+      console.error('Error creating ticket:', error);
+      throw error;
+    }
+  }
+
+  async updateTicket(id: number, ticketUpdate: Partial<InsertTicket>): Promise<Ticket | undefined> {
+    try {
+      // Build dynamic query based on which fields are provided
+      const setFields = [];
+      const values = [];
+      let paramIndex = 1;
+
+      if (ticketUpdate.title !== undefined) {
+        setFields.push(`title = $${paramIndex++}`);
+        values.push(ticketUpdate.title);
+      }
+
+      if (ticketUpdate.description !== undefined) {
+        setFields.push(`description = $${paramIndex++}`);
+        values.push(ticketUpdate.description);
+      }
+
+      if (ticketUpdate.category !== undefined) {
+        setFields.push(`category = $${paramIndex++}`);
+        values.push(ticketUpdate.category);
+      }
+
+      if (ticketUpdate.building !== undefined) {
+        setFields.push(`building = $${paramIndex++}`);
+        values.push(ticketUpdate.building);
+      }
+
+      if (ticketUpdate.floor !== undefined) {
+        setFields.push(`floor = $${paramIndex++}`);
+        values.push(ticketUpdate.floor);
+      }
+
+      if (ticketUpdate.room !== undefined) {
+        setFields.push(`room = $${paramIndex++}`);
+        values.push(ticketUpdate.room);
+      }
+
+      if (ticketUpdate.area !== undefined) {
+        setFields.push(`area = $${paramIndex++}`);
+        values.push(ticketUpdate.area);
+      }
+
+      if (ticketUpdate.element !== undefined) {
+        setFields.push(`element = $${paramIndex++}`);
+        values.push(ticketUpdate.element);
+      }
+
+      if (ticketUpdate.priority !== undefined) {
+        setFields.push(`priority = $${paramIndex++}`);
+        values.push(ticketUpdate.priority);
+      }
+
+      if (ticketUpdate.employeeAssigned !== undefined) {
+        setFields.push(`employee_assigned = $${paramIndex++}`);
+        values.push(ticketUpdate.employeeAssigned);
+      }
+
+      if (ticketUpdate.manager !== undefined) {
+        setFields.push(`manager = $${paramIndex++}`);
+        values.push(ticketUpdate.manager);
+      }
+
+      if (ticketUpdate.status !== undefined) {
+        setFields.push(`status = $${paramIndex++}`);
+        values.push(ticketUpdate.status);
+      }
+
+      if (ticketUpdate.attachments !== undefined) {
+        setFields.push(`attachments = $${paramIndex++}`);
+        values.push(JSON.stringify(ticketUpdate.attachments));
+      }
+
+      if (setFields.length === 0) {
+        return this.getTicket(id); // Nothing to update
+      }
+
+      values.push(id); // Add id as the last parameter
+
+      const query = `
+        UPDATE tickets
+        SET ${setFields.join(', ')}
+        WHERE id = $${paramIndex}
+        RETURNING *
+      `;
+
+      const result = await pool.query(query, values);
+      return result.rows[0] || undefined;
+    } catch (error) {
+      console.error('Error updating ticket:', error);
+      return undefined;
+    }
+  }
+
+  async deleteTicket(id: number): Promise<boolean> {
+    try {
+      const query = 'DELETE FROM tickets WHERE id = $1';
+      const result = await pool.query(query, [id]);
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error('Error deleting ticket:', error);
+      return false;
+    }
+  }
+}
+
+// Use database storage instead of memory storage
+export const storage = new DatabaseStorage();

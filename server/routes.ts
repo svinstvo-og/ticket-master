@@ -213,12 +213,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         initialStatus = ticketData.status || initialStatus;
       }
       
-      // Validate the ticket data
-      const validTicketData = insertTicketSchema.parse({
-        ...ticketData,
+      // For backward compatibility with the old form
+      // Using the name-based form data to look up IDs from the database
+      const { building, floor, room, area, element, category, priority, ...restTicketData } = ticketData;
+
+      // Create a compatible object for validation
+      const compatibleTicketData = {
+        ...restTicketData,
+        // Keep the text values for backward compatibility
+        building: building || '',
+        floor: floor || '',
+        room: room || '',
+        area: area || '',
+        element: element || '',
+        category: category || '',
+        priority: priority || 'Nízká',
         status: initialStatus,
         attachments: attachments.length > 0 ? attachments : ticketData.attachments
-      });
+      };
+      
+      // Validate the ticket data with the current schema
+      const validTicketData = insertTicketSchema.parse(compatibleTicketData);
       
       // Create the ticket
       const createdTicket = await storage.createTicket(validTicketData);
