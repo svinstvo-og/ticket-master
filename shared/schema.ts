@@ -65,6 +65,7 @@ export const insertTicketSchema = z.object({
   
   // User assignment fields
   status: z.string().optional(),
+  createdBy: z.number(), // Current user ID (required)
   assignedTo: z.number().optional(),
   approvedBy: z.number().optional(),
   

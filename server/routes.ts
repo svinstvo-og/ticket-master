@@ -229,6 +229,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         category: category || '',
         priority: priority || 'Nízká',
         status: initialStatus,
+        // Add current user as the creator
+        createdBy: req.user.id,
         attachments: attachments.length > 0 ? attachments : ticketData.attachments
       };
       
