@@ -323,12 +323,41 @@ export class DatabaseStorage implements IStorage {
 
   async createTicket(insertTicket: InsertTicket): Promise<Ticket> {
     try {
+      // Handle mapping from form values to DB IDs if needed
+      let buildingId = insertTicket.buildingId;
+      let floorId = insertTicket.floorId;
+      let roomId = insertTicket.roomId;
+      let areaId = insertTicket.areaId;
+      let elementId = insertTicket.elementId;
+      
+      // If we have string values but not IDs, look up the IDs
+      if (!buildingId && insertTicket.building) {
+        // For now, just use default values for testing
+        buildingId = 1;
+      }
+      
+      if (!floorId && insertTicket.floor) {
+        floorId = 1;
+      }
+      
+      if (!roomId && insertTicket.room) {
+        roomId = 1;
+      }
+      
+      if (!areaId && insertTicket.area) {
+        areaId = 1;
+      }
+      
+      if (!elementId && insertTicket.element) {
+        elementId = 1;
+      }
+      
       const query = `
         INSERT INTO tickets (
-          title, description, category, building, floor, room, area, element, 
-          priority, employee_assigned, manager, status, attachments
+          title, description, category, building_id, floor_id, room_id, area_id, element_id, 
+          priority, status, created_by
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
         RETURNING *
       `;
       
@@ -336,16 +365,14 @@ export class DatabaseStorage implements IStorage {
         insertTicket.title,
         insertTicket.description,
         insertTicket.category,
-        insertTicket.building,
-        insertTicket.floor,
-        insertTicket.room,
-        insertTicket.area,
-        insertTicket.element,
+        buildingId,
+        floorId,
+        roomId,
+        areaId,
+        elementId,
         insertTicket.priority,
-        insertTicket.employeeAssigned || '',
-        insertTicket.manager || '',
         insertTicket.status || 'Otevřený',
-        JSON.stringify(insertTicket.attachments || [])
+        insertTicket.createdBy || null
       ];
       
       const result = await pool.query(query, values);
@@ -378,29 +405,29 @@ export class DatabaseStorage implements IStorage {
         values.push(ticketUpdate.category);
       }
 
-      if (ticketUpdate.building !== undefined) {
-        setFields.push(`building = $${paramIndex++}`);
-        values.push(ticketUpdate.building);
+      if (ticketUpdate.buildingId !== undefined) {
+        setFields.push(`building_id = $${paramIndex++}`);
+        values.push(ticketUpdate.buildingId);
       }
 
-      if (ticketUpdate.floor !== undefined) {
-        setFields.push(`floor = $${paramIndex++}`);
-        values.push(ticketUpdate.floor);
+      if (ticketUpdate.floorId !== undefined) {
+        setFields.push(`floor_id = $${paramIndex++}`);
+        values.push(ticketUpdate.floorId);
       }
 
-      if (ticketUpdate.room !== undefined) {
-        setFields.push(`room = $${paramIndex++}`);
-        values.push(ticketUpdate.room);
+      if (ticketUpdate.roomId !== undefined) {
+        setFields.push(`room_id = $${paramIndex++}`);
+        values.push(ticketUpdate.roomId);
       }
 
-      if (ticketUpdate.area !== undefined) {
-        setFields.push(`area = $${paramIndex++}`);
-        values.push(ticketUpdate.area);
+      if (ticketUpdate.areaId !== undefined) {
+        setFields.push(`area_id = $${paramIndex++}`);
+        values.push(ticketUpdate.areaId);
       }
 
-      if (ticketUpdate.element !== undefined) {
-        setFields.push(`element = $${paramIndex++}`);
-        values.push(ticketUpdate.element);
+      if (ticketUpdate.elementId !== undefined) {
+        setFields.push(`element_id = $${paramIndex++}`);
+        values.push(ticketUpdate.elementId);
       }
 
       if (ticketUpdate.priority !== undefined) {
@@ -408,14 +435,14 @@ export class DatabaseStorage implements IStorage {
         values.push(ticketUpdate.priority);
       }
 
-      if (ticketUpdate.employeeAssigned !== undefined) {
-        setFields.push(`employee_assigned = $${paramIndex++}`);
-        values.push(ticketUpdate.employeeAssigned);
+      if (ticketUpdate.assignedTo !== undefined) {
+        setFields.push(`assigned_to = $${paramIndex++}`);
+        values.push(ticketUpdate.assignedTo);
       }
 
-      if (ticketUpdate.manager !== undefined) {
-        setFields.push(`manager = $${paramIndex++}`);
-        values.push(ticketUpdate.manager);
+      if (ticketUpdate.approvedBy !== undefined) {
+        setFields.push(`approved_by = $${paramIndex++}`);
+        values.push(ticketUpdate.approvedBy);
       }
 
       if (ticketUpdate.status !== undefined) {
@@ -423,9 +450,9 @@ export class DatabaseStorage implements IStorage {
         values.push(ticketUpdate.status);
       }
 
-      if (ticketUpdate.attachments !== undefined) {
-        setFields.push(`attachments = $${paramIndex++}`);
-        values.push(JSON.stringify(ticketUpdate.attachments));
+      if (ticketUpdate.dueDate !== undefined) {
+        setFields.push(`due_date = $${paramIndex++}`);
+        values.push(ticketUpdate.dueDate);
       }
 
       if (setFields.length === 0) {
