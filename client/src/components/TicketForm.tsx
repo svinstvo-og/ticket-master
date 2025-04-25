@@ -192,8 +192,26 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
   function onSubmit(data: TicketFormValues) {
     console.log("Form submitted with data:", data);
     
-    // Need to handle createdBy, which should come from the server
-    ticketMutation.mutate(data);
+    // Make sure all required location IDs are available
+    if (!selectedBuildingId || !selectedFloorId || !selectedRoomId || !selectedAreaId || !selectedElementId) {
+      console.error("Missing required location IDs");
+      return;
+    }
+    
+    // Prepare the data with IDs instead of names
+    const ticketData = {
+      ...data,
+      buildingId: selectedBuildingId as number, // Type assertion since we verified these aren't null
+      floorId: selectedFloorId as number,
+      roomId: selectedRoomId as number,
+      areaId: selectedAreaId as number,
+      elementId: selectedElementId as number
+    };
+    
+    console.log("Submitting ticket with IDs:", ticketData);
+    
+    // createdBy will be automatically added by the server from the authenticated user
+    ticketMutation.mutate(ticketData);
   }
 
   // Handle building selection change
