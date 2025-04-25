@@ -6,7 +6,7 @@ interface PrioritySelectorProps {
 }
 
 export default function PrioritySelector({ value, onChange }: PrioritySelectorProps) {
-  const [selectedPriority, setSelectedPriority] = useState(value || "Low");
+  const [selectedPriority, setSelectedPriority] = useState(value || "Nízká");
 
   const handlePriorityChange = (priority: string) => {
     setSelectedPriority(priority);
@@ -14,9 +14,9 @@ export default function PrioritySelector({ value, onChange }: PrioritySelectorPr
   };
 
   const getPriorityClass = (priority: string) => {
-    const baseClass = priority === "Low" 
+    const baseClass = priority === "Nízká" 
       ? "priority-low" 
-      : priority === "Medium" 
+      : priority === "Střední" 
         ? "priority-medium" 
         : "priority-high";
         
@@ -29,36 +29,36 @@ export default function PrioritySelector({ value, onChange }: PrioritySelectorPr
         <input 
           type="radio" 
           name="priority" 
-          value="Low" 
-          checked={selectedPriority === "Low"} 
-          onChange={() => handlePriorityChange("Low")} 
+          value="Nízká" 
+          checked={selectedPriority === "Nízká"} 
+          onChange={() => handlePriorityChange("Nízká")} 
           className="hidden" 
         />
-        <span className={getPriorityClass("Low")}>Low</span>
+        <span className={getPriorityClass("Nízká")}>Nízká</span>
       </label>
       
       <label className="flex items-center">
         <input 
           type="radio" 
           name="priority" 
-          value="Medium" 
-          checked={selectedPriority === "Medium"} 
-          onChange={() => handlePriorityChange("Medium")} 
+          value="Střední" 
+          checked={selectedPriority === "Střední"} 
+          onChange={() => handlePriorityChange("Střední")} 
           className="hidden" 
         />
-        <span className={getPriorityClass("Medium")}>Medium</span>
+        <span className={getPriorityClass("Střední")}>Střední</span>
       </label>
       
       <label className="flex items-center">
         <input 
           type="radio" 
           name="priority" 
-          value="High" 
-          checked={selectedPriority === "High"}
-          onChange={() => handlePriorityChange("High")} 
+          value="Vysoká" 
+          checked={selectedPriority === "Vysoká"}
+          onChange={() => handlePriorityChange("Vysoká")} 
           className="hidden" 
         />
-        <span className={getPriorityClass("High")}>High</span>
+        <span className={getPriorityClass("Vysoká")}>Vysoká</span>
       </label>
     </div>
   );

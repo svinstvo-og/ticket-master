@@ -297,14 +297,14 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
             
             {/* Assignment Section */}
             <div>
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Assignment Information</h2>
+              <h2 className="text-lg font-medium text-gray-900 mb-4">Informace o Přiřazení</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="priority"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Priority *</FormLabel>
+                      <FormLabel>Priorita *</FormLabel>
                       <FormControl>
                         <PrioritySelector
                           value={field.value}
@@ -321,18 +321,18 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
                   name="status"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Status *</FormLabel>
+                      <FormLabel>Stav *</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select status" />
+                            <SelectValue placeholder="Vyberte stav" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Open">Open</SelectItem>
-                          <SelectItem value="In Progress">In Progress</SelectItem>
-                          <SelectItem value="Resolved">Resolved</SelectItem>
-                          <SelectItem value="Closed">Closed</SelectItem>
+                          <SelectItem value="Otevřený">Otevřený</SelectItem>
+                          <SelectItem value="Zpracovává se">Zpracovává se</SelectItem>
+                          <SelectItem value="Vyřešený">Vyřešený</SelectItem>
+                          <SelectItem value="Uzavřený">Uzavřený</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -345,11 +345,11 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
                   name="employeeAssigned"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Employee Assigned *</FormLabel>
+                      <FormLabel>Přiřazený Zaměstnanec *</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select employee" />
+                            <SelectValue placeholder="Vyberte zaměstnance" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -369,11 +369,11 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
                   name="manager"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Manager *</FormLabel>
+                      <FormLabel>Manažer *</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select manager" />
+                            <SelectValue placeholder="Vyberte manažera" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -396,7 +396,7 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <div>
-                    <h2 className="text-lg font-medium text-gray-900 mb-4">Attachments</h2>
+                    <h2 className="text-lg font-medium text-gray-900 mb-4">Přílohy</h2>
                     <FormControl>
                       <FileUpload
                         value={field.value}
@@ -415,10 +415,10 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
                 variant="outline"
                 onClick={resetForm}
               >
-                Reset
+                Resetovat
               </Button>
               <Button type="submit" disabled={ticketMutation.isPending}>
-                {ticketMutation.isPending ? "Submitting..." : "Submit Ticket"}
+                {ticketMutation.isPending ? "Odesílání..." : "Odeslat Tiket"}
               </Button>
             </div>
           </div>
