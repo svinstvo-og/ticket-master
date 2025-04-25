@@ -89,6 +89,110 @@ const upload = multer({
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication routes
   setupAuth(app);
+
+  // API endpoints for location hierarchy
+  app.get("/api/buildings", async (req: Request, res: Response) => {
+    try {
+      const buildings = await storage.getBuildings();
+      res.status(200).json(buildings);
+    } catch (error) {
+      console.error("Error fetching buildings:", error);
+      res.status(500).json({ message: "Error fetching buildings" });
+    }
+  });
+
+  app.get("/api/floors", async (req: Request, res: Response) => {
+    try {
+      const buildingId = req.query.buildingId ? parseInt(req.query.buildingId as string) : undefined;
+      const floors = await storage.getFloors(buildingId);
+      res.status(200).json(floors);
+    } catch (error) {
+      console.error("Error fetching floors:", error);
+      res.status(500).json({ message: "Error fetching floors" });
+    }
+  });
+
+  app.get("/api/rooms", async (req: Request, res: Response) => {
+    try {
+      const floorId = req.query.floorId ? parseInt(req.query.floorId as string) : undefined;
+      const rooms = await storage.getRooms(floorId);
+      res.status(200).json(rooms);
+    } catch (error) {
+      console.error("Error fetching rooms:", error);
+      res.status(500).json({ message: "Error fetching rooms" });
+    }
+  });
+
+  app.get("/api/areas", async (req: Request, res: Response) => {
+    try {
+      const roomId = req.query.roomId ? parseInt(req.query.roomId as string) : undefined;
+      const areas = await storage.getAreas(roomId);
+      res.status(200).json(areas);
+    } catch (error) {
+      console.error("Error fetching areas:", error);
+      res.status(500).json({ message: "Error fetching areas" });
+    }
+  });
+
+  app.get("/api/elements", async (req: Request, res: Response) => {
+    try {
+      const areaId = req.query.areaId ? parseInt(req.query.areaId as string) : undefined;
+      const elements = await storage.getElements(areaId);
+      res.status(200).json(elements);
+    } catch (error) {
+      console.error("Error fetching elements:", error);
+      res.status(500).json({ message: "Error fetching elements" });
+    }
+  });
+
+  // API endpoint to fetch the complete location hierarchy at once
+  app.get("/api/location-hierarchy", async (req: Request, res: Response) => {
+    try {
+      const buildings = await storage.getBuildings();
+      
+      // Build the complete hierarchy
+      const result = await Promise.all(buildings.map(async building => {
+        const floors = await storage.getFloors(building.id);
+        
+        const floorsWithRooms = await Promise.all(floors.map(async floor => {
+          const rooms = await storage.getRooms(floor.id);
+          
+          const roomsWithAreas = await Promise.all(rooms.map(async room => {
+            const areas = await storage.getAreas(room.id);
+            
+            const areasWithElements = await Promise.all(areas.map(async area => {
+              const elements = await storage.getElements(area.id);
+              return {
+                ...area,
+                elements
+              };
+            }));
+            
+            return {
+              ...room,
+              areas: areasWithElements
+            };
+          }));
+          
+          return {
+            ...floor,
+            rooms: roomsWithRooms
+          };
+        }));
+        
+        return {
+          ...building,
+          floors: floorsWithRooms
+        };
+      }));
+      
+      res.status(200).json(result);
+    } catch (error) {
+      console.error("Error fetching location hierarchy:", error);
+      res.status(500).json({ message: "Error fetching location hierarchy" });
+    }
+  });
+
   // Get all tickets (filtered by role)
   app.get("/api/tickets", canViewAllTickets, async (req: Request, res: Response) => {
     try {
