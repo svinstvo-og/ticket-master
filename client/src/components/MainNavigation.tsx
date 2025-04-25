@@ -39,6 +39,9 @@ export default function MainNavigation() {
               <NavLink href="/tickets" isActive={location === "/tickets"}>
                 Nový Tiket
               </NavLink>
+              <NavLink href="/profile" isActive={location === "/profile"}>
+                Můj Profil
+              </NavLink>
             </nav>
           </div>
 
@@ -92,6 +95,13 @@ export default function MainNavigation() {
                     onClick={() => setMobileOpen(false)}
                   >
                     Nový Tiket
+                  </MobileNavLink>
+                  <MobileNavLink 
+                    href="/profile" 
+                    isActive={location === "/profile"}
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    Můj Profil
                   </MobileNavLink>
                   <div className="pt-4 mt-4 border-t">
                     <div className="text-sm text-gray-600 mb-2">
