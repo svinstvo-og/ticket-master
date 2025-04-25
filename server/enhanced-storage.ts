@@ -1,5 +1,5 @@
 import { eq, and, or, desc, sql, isNull, not } from "drizzle-orm";
-import { db } from "./db";
+import { db, pool } from "./enhanced-db";
 import * as schema from "@shared/enhanced-schema";
 import connectPg from "connect-pg-simple";
 import session from "express-session";
@@ -89,7 +89,7 @@ export class EnhancedDatabaseStorage implements IEnhancedStorage {
   constructor() {
     // Initialize PostgreSQL session store with current pool
     this.sessionStore = new PostgresSessionStore({
-      pool: db.config.client.queryBuilder,
+      pool: pool, // Use the pool directly from db module
       createTableIfMissing: true
     });
   }
