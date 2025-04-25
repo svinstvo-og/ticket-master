@@ -255,22 +255,22 @@ export default function UserProfilePage() {
       </div>
       
       <div className="container mx-auto py-10 px-4 sm:px-6">
-        <h1 className="text-3xl font-bold mb-6">User Profile</h1>
+        <h1 className="text-3xl font-bold mb-6">Uživatelský profil</h1>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="mb-6">
-            <TabsTrigger value="profile">My Profile</TabsTrigger>
-            <TabsTrigger value="password">Change Password</TabsTrigger>
-            {isAdmin && <TabsTrigger value="admin">User Management</TabsTrigger>}
+            <TabsTrigger value="profile">Můj profil</TabsTrigger>
+            <TabsTrigger value="password">Změna hesla</TabsTrigger>
+            {isAdmin && <TabsTrigger value="admin">Správa uživatelů</TabsTrigger>}
           </TabsList>
         
           {/* Profile Tab */}
           <TabsContent value="profile">
             <Card>
               <CardHeader>
-                <CardTitle>Profile Information</CardTitle>
+                <CardTitle>Informace o profilu</CardTitle>
                 <CardDescription>
-                  Update your personal information and settings
+                  Aktualizujte své osobní údaje a nastavení
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -387,9 +387,9 @@ export default function UserProfilePage() {
           <TabsContent value="password">
             <Card>
               <CardHeader>
-                <CardTitle>Change Password</CardTitle>
+                <CardTitle>Změna hesla</CardTitle>
                 <CardDescription>
-                  Update your password to keep your account secure
+                  Aktualizujte své heslo pro zachování bezpečnosti účtu
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -400,9 +400,9 @@ export default function UserProfilePage() {
                       name="oldPassword"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Current Password</FormLabel>
+                          <FormLabel>Aktuální heslo</FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="Enter your current password" {...field} />
+                            <Input type="password" placeholder="Zadejte vaše aktuální heslo" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -500,7 +500,7 @@ export default function UserProfilePage() {
                       {selectedUserId && selectedUserDetails ? (
                         <div>
                           <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-lg font-medium">Edit User</h3>
+                            <h3 className="text-lg font-medium">Upravit uživatele</h3>
                             <div className="flex space-x-2">
                               {/* Password Reset Dialog */}
                               <AlertDialog>
