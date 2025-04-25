@@ -32,6 +32,13 @@ export interface IStorage {
   updateTicket(id: number, ticket: Partial<InsertTicket>): Promise<Ticket | undefined>;
   deleteTicket(id: number): Promise<boolean>;
   
+  // Location hierarchy methods
+  getBuildings(): Promise<any[]>;
+  getFloors(buildingId?: number): Promise<any[]>;
+  getRooms(floorId?: number): Promise<any[]>;
+  getAreas(roomId?: number): Promise<any[]>;
+  getElements(areaId?: number): Promise<any[]>;
+  
   // Session store
   sessionStore: any;
 }
@@ -157,6 +164,27 @@ export class MemStorage implements IStorage {
 
   async deleteTicket(id: number): Promise<boolean> {
     return this.tickets.delete(id);
+  }
+
+  // Location hierarchy methods - MemStorage just returns empty arrays
+  async getBuildings(): Promise<any[]> {
+    return [];
+  }
+
+  async getFloors(buildingId?: number): Promise<any[]> {
+    return [];
+  }
+
+  async getRooms(floorId?: number): Promise<any[]> {
+    return [];
+  }
+
+  async getAreas(roomId?: number): Promise<any[]> {
+    return [];
+  }
+
+  async getElements(areaId?: number): Promise<any[]> {
+    return [];
   }
 }
 
@@ -499,6 +527,93 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error deleting ticket:', error);
       return false;
+    }
+  }
+
+  // Location hierarchy methods
+  async getBuildings(): Promise<any[]> {
+    try {
+      const result = await pool.query('SELECT * FROM buildings ORDER BY name');
+      return result.rows;
+    } catch (error) {
+      console.error('Error getting buildings:', error);
+      return [];
+    }
+  }
+
+  async getFloors(buildingId?: number): Promise<any[]> {
+    try {
+      let query = 'SELECT * FROM floors';
+      let params: any[] = [];
+
+      if (buildingId) {
+        query += ' WHERE building_id = $1';
+        params.push(buildingId);
+      }
+
+      query += ' ORDER BY name';
+      const result = await pool.query(query, params);
+      return result.rows;
+    } catch (error) {
+      console.error('Error getting floors:', error);
+      return [];
+    }
+  }
+
+  async getRooms(floorId?: number): Promise<any[]> {
+    try {
+      let query = 'SELECT * FROM rooms';
+      let params: any[] = [];
+
+      if (floorId) {
+        query += ' WHERE floor_id = $1';
+        params.push(floorId);
+      }
+
+      query += ' ORDER BY name';
+      const result = await pool.query(query, params);
+      return result.rows;
+    } catch (error) {
+      console.error('Error getting rooms:', error);
+      return [];
+    }
+  }
+
+  async getAreas(roomId?: number): Promise<any[]> {
+    try {
+      let query = 'SELECT * FROM areas';
+      let params: any[] = [];
+
+      if (roomId) {
+        query += ' WHERE room_id = $1';
+        params.push(roomId);
+      }
+
+      query += ' ORDER BY name';
+      const result = await pool.query(query, params);
+      return result.rows;
+    } catch (error) {
+      console.error('Error getting areas:', error);
+      return [];
+    }
+  }
+
+  async getElements(areaId?: number): Promise<any[]> {
+    try {
+      let query = 'SELECT * FROM elements';
+      let params: any[] = [];
+
+      if (areaId) {
+        query += ' WHERE area_id = $1';
+        params.push(areaId);
+      }
+
+      query += ' ORDER BY name';
+      const result = await pool.query(query, params);
+      return result.rows;
+    } catch (error) {
+      console.error('Error getting elements:', error);
+      return [];
     }
   }
 }

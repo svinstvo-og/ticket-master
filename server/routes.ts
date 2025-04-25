@@ -176,7 +176,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           return {
             ...floor,
-            rooms: roomsWithRooms
+            rooms: roomsWithAreas
           };
         }));
         
