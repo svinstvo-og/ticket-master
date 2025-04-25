@@ -64,8 +64,7 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
       category: "",
       building: "",
       floor: "",
-      roomNumber: "",
-      roomName: "",
+      room: "",
       priority: "Nízká",
       employeeAssigned: "",
       manager: "",
@@ -365,57 +364,28 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
 
                 <FormField
                   control={form.control}
-                  name="roomNumber"
+                  name="room"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Číslo *</FormLabel>
+                      <FormLabel>Místnost *</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Vyberte číslo" />
+                            <SelectValue placeholder="Vyberte místnost" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="101">101</SelectItem>
-                          <SelectItem value="102">102</SelectItem>
-                          <SelectItem value="103">103</SelectItem>
-                          <SelectItem value="104">104</SelectItem>
-                          <SelectItem value="105">105</SelectItem>
-                          <SelectItem value="201">201</SelectItem>
-                          <SelectItem value="202">202</SelectItem>
-                          <SelectItem value="203">203</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="roomName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Název místnosti *</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Vyberte název místnosti" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Kancelář">Kancelář</SelectItem>
-                          <SelectItem value="Zasedací místnost">Zasedací místnost</SelectItem>
-                          <SelectItem value="Kuchyňka">Kuchyňka</SelectItem>
-                          <SelectItem value="Toalety">Toalety</SelectItem>
-                          <SelectItem value="Sklad">Sklad</SelectItem>
-                          <SelectItem value="Technická místnost">Technická místnost</SelectItem>
+                          <SelectItem value="101 - Kancelář">101 - Kancelář</SelectItem>
+                          <SelectItem value="102 - Zasedací místnost">102 - Zasedací místnost</SelectItem>
+                          <SelectItem value="103 - Kuchyňka">103 - Kuchyňka</SelectItem>
+                          <SelectItem value="104 - Toalety">104 - Toalety</SelectItem>
+                          <SelectItem value="105 - Sklad">105 - Sklad</SelectItem>
+                          <SelectItem value="201 - Kancelář">201 - Kancelář</SelectItem>
+                          <SelectItem value="202 - Zasedací místnost">202 - Zasedací místnost</SelectItem>
+                          <SelectItem value="203 - Technická místnost">203 - Technická místnost</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
