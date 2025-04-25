@@ -41,12 +41,40 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  fullName: text("full_name").default(''),
+  email: text("email").default(''),
+  role: text("role").default('user'), // 'user', 'admin', 'manager'
+  department: text("department").default(''),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow()
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
+  fullName: true,
+  email: true,
+  role: true,
+  department: true,
+  isActive: true
+});
+
+// For updating users (no password required)
+export const updateUserSchema = createInsertSchema(users).pick({
+  fullName: true,
+  email: true,
+  role: true,
+  department: true,
+  isActive: true
+});
+
+// For password change
+export const passwordChangeSchema = z.object({
+  oldPassword: z.string().min(6),
+  newPassword: z.string().min(6)
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type UpdateUser = z.infer<typeof updateUserSchema>;
+export type PasswordChange = z.infer<typeof passwordChangeSchema>;
 export type User = typeof users.$inferSelect;

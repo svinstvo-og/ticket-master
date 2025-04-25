@@ -1,4 +1,4 @@
-import { tickets, type Ticket, type InsertTicket, users, type User, type InsertUser } from "@shared/schema";
+import { tickets, type Ticket, type InsertTicket, users, type User, type InsertUser, type UpdateUser } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 
@@ -12,6 +12,10 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, user: Partial<UpdateUser>): Promise<User | undefined>;
+  getAllUsers(): Promise<User[]>;
+  updatePassword(id: number, newPassword: string): Promise<boolean>;
+  deactivateUser(id: number): Promise<boolean>;
   
   // Ticket methods
   getTickets(): Promise<Ticket[]>;
@@ -54,9 +58,50 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.userCurrentId++;
-    const user: User = { ...insertUser, id };
+    const createdAt = new Date();
+    const user: User = { 
+      ...insertUser, 
+      id,
+      createdAt,
+      fullName: insertUser.fullName || '',
+      email: insertUser.email || '',
+      role: insertUser.role || 'user',
+      department: insertUser.department || '',
+      isActive: insertUser.isActive !== undefined ? insertUser.isActive : true
+    };
     this.users.set(id, user);
     return user;
+  }
+  
+  async updateUser(id: number, userUpdate: Partial<UpdateUser>): Promise<User | undefined> {
+    const user = this.users.get(id);
+    if (!user) return undefined;
+    
+    const updatedUser: User = { ...user, ...userUpdate };
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+  
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
+  }
+  
+  async updatePassword(id: number, newPassword: string): Promise<boolean> {
+    const user = this.users.get(id);
+    if (!user) return false;
+    
+    user.password = newPassword;
+    this.users.set(id, user);
+    return true;
+  }
+  
+  async deactivateUser(id: number): Promise<boolean> {
+    const user = this.users.get(id);
+    if (!user) return false;
+    
+    user.isActive = false;
+    this.users.set(id, user);
+    return true;
   }
 
   // Ticket methods
