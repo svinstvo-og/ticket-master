@@ -45,6 +45,22 @@ function getInitials(name: string): string {
     .substring(0, 2);
 }
 
+// Get localized role name
+function getRoleDisplayName(role: string): string {
+  switch (role) {
+    case 'user':
+      return 'Uživatel';
+    case 'admin':
+      return 'Admin';
+    case 'manager':
+      return 'Vedoucí oddělení';
+    case 'technician':
+      return 'Technik';
+    default:
+      return role;
+  }
+}
+
 export default function UserProfilePage() {
   const { user, isLoading: isAuthLoading, logoutMutation } = useAuth();
   const { getUserById, updateUserMutation, changePasswordMutation, resetPasswordMutation, setUserStatusMutation, users, isLoadingUsers } = useUsers();
@@ -268,7 +284,7 @@ export default function UserProfilePage() {
                     <div className="text-center">
                       <p className="text-lg font-semibold">{currentUserDetails?.fullName || user?.username}</p>
                       <Badge variant="outline" className="mt-1">
-                        {currentUserDetails?.role || 'user'}
+                        {getRoleDisplayName(currentUserDetails?.role || 'user')}
                       </Badge>
                     </div>
                   </div>
@@ -346,11 +362,11 @@ export default function UserProfilePage() {
                       <span className="font-medium">
                         {currentUserDetails?.isActive ? (
                           <span className="flex items-center text-green-600">
-                            <UserCheck className="h-4 w-4 mr-1" /> Active
+                            <UserCheck className="h-4 w-4 mr-1" /> Aktivní
                           </span>
                         ) : (
                           <span className="flex items-center text-red-600">
-                            <UserX className="h-4 w-4 mr-1" /> Inactive
+                            <UserX className="h-4 w-4 mr-1" /> Neaktivní
                           </span>
                         )}
                       </span>
@@ -464,12 +480,12 @@ export default function UserProfilePage() {
                                   </Avatar>
                                   <div>
                                     <p className="font-medium">{u.fullName || u.username}</p>
-                                    <p className="text-xs text-muted-foreground">{u.role}</p>
+                                    <p className="text-xs text-muted-foreground">{getRoleDisplayName(u.role || 'user')}</p>
                                   </div>
                                 </div>
                                 {!u.isActive && (
                                   <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200">
-                                    Inactive
+                                    Neaktivní
                                   </Badge>
                                 )}
                               </div>
@@ -513,7 +529,7 @@ export default function UserProfilePage() {
                                     variant={selectedUserDetails.isActive ? "destructive" : "default"}
                                     size="sm"
                                   >
-                                    {selectedUserDetails.isActive ? "Deactivate User" : "Activate User"}
+                                    {selectedUserDetails.isActive ? "Deaktivovat uživatele" : "Aktivovat uživatele"}
                                   </Button>
                                 </AlertDialogTrigger>
                                 <AlertDialogContent>
@@ -602,9 +618,10 @@ export default function UserProfilePage() {
                                           </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                          <SelectItem value="user">User</SelectItem>
-                                          <SelectItem value="manager">Manager</SelectItem>
+                                          <SelectItem value="user">Uživatel</SelectItem>
                                           <SelectItem value="admin">Admin</SelectItem>
+                                          <SelectItem value="manager">Vedoucí oddělení</SelectItem>
+                                          <SelectItem value="technician">Technik</SelectItem>
                                         </SelectContent>
                                       </Select>
                                       <FormMessage />
@@ -637,7 +654,7 @@ export default function UserProfilePage() {
                               <div className="flex justify-between">
                                 <span className="text-muted-foreground">Account Status:</span>
                                 <span className={`font-medium ${selectedUserDetails.isActive ? 'text-green-600' : 'text-red-600'}`}>
-                                  {selectedUserDetails.isActive ? 'Active' : 'Inactive'}
+                                  {selectedUserDetails.isActive ? 'Aktivní' : 'Neaktivní'}
                                 </span>
                               </div>
                               <div className="flex justify-between">
