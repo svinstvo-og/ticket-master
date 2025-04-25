@@ -24,7 +24,7 @@ async function comparePasswords(supplied: string, stored: string) {
   return timingSafeEqual(hashedBuf, suppliedBuf);
 }
 
-// Middleware to check if user is admin
+// Role-based middleware
 function isAdmin(req: Request, res: Response, next: NextFunction) {
   if (!req.isAuthenticated()) {
     return res.status(401).json({ message: "Unauthorized" });
@@ -32,6 +32,47 @@ function isAdmin(req: Request, res: Response, next: NextFunction) {
   
   if (req.user.role !== 'admin') {
     return res.status(403).json({ message: "Forbidden: Admin access required" });
+  }
+  
+  next();
+}
+
+// Middleware to check if user is manager (department head)
+function isManager(req: Request, res: Response, next: NextFunction) {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  
+  if (req.user.role !== 'manager' && req.user.role !== 'admin') {
+    return res.status(403).json({ message: "Forbidden: Department Head access required" });
+  }
+  
+  next();
+}
+
+// Middleware to check if user is technician
+function isTechnician(req: Request, res: Response, next: NextFunction) {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  
+  if (req.user.role !== 'technician' && req.user.role !== 'admin') {
+    return res.status(403).json({ message: "Forbidden: Technician access required" });
+  }
+  
+  next();
+}
+
+// Middleware to check if user can view tickets (all roles except regular user can view all tickets)
+function canViewAllTickets(req: Request, res: Response, next: NextFunction) {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  
+  if (req.user.role === 'user') {
+    // Regular users can only see their own tickets
+    // We'll filter tickets in the route handler
+    req.query.filterByUser = 'true';
   }
   
   next();
@@ -48,19 +89,53 @@ const upload = multer({
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication routes
   setupAuth(app);
-  // Get all tickets
-  app.get("/api/tickets", async (req: Request, res: Response) => {
+  // Get all tickets (filtered by role)
+  app.get("/api/tickets", canViewAllTickets, async (req: Request, res: Response) => {
     try {
       const tickets = await storage.getTickets();
+      
+      // Filter tickets based on user role
+      if (req.query.filterByUser === 'true' && req.user) {
+        // Regular users can only see tickets they created
+        const filteredTickets = tickets.filter(ticket => {
+          // If we had a 'createdBy' field in the ticket, we would use that
+          // For now, we're returning all tickets for all users
+          return true;
+        });
+        return res.json(filteredTickets);
+      } else if (req.user?.role === 'manager') {
+        // Department heads can see tickets from their department
+        const filteredTickets = tickets.filter(ticket => {
+          // Filter by department if we had a department field in the ticket
+          // For now, we're returning all tickets for managers
+          return true;
+        });
+        return res.json(filteredTickets);
+      } else if (req.user?.role === 'technician') {
+        // Technicians can see tickets assigned to them
+        const filteredTickets = tickets.filter(ticket => {
+          // If ticket has an employee assigned field, filter by that
+          return ticket.employeeAssigned === req.user?.username || 
+                 ticket.employeeAssigned === req.user?.fullName || 
+                 ticket.employeeAssigned === '';
+        });
+        return res.json(filteredTickets);
+      }
+      
+      // Admins can see all tickets
       res.json(tickets);
     } catch (error) {
       res.status(500).json({ message: "Error fetching tickets", error: (error as Error).message });
     }
   });
 
-  // Get ticket by id
+  // Get ticket by id (with role-based access)
   app.get("/api/tickets/:id", async (req: Request, res: Response) => {
     try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid ticket ID" });
@@ -71,6 +146,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Ticket not found" });
       }
 
+      // Check role-based permissions
+      if (req.user?.role === 'user') {
+        // Regular users can only view tickets they created
+        // Since we don't have a createdBy field yet, this is a placeholder
+        // In a real implementation, we would check ticket.createdBy === req.user.id
+        return res.json(ticket);
+      } else if (req.user?.role === 'manager') {
+        // Department heads can view tickets from their department
+        // In a real implementation, we would check ticket.department === req.user.department
+        return res.json(ticket);
+      } else if (req.user?.role === 'technician') {
+        // Technicians can view tickets assigned to them
+        if (ticket.employeeAssigned === req.user?.username || 
+            ticket.employeeAssigned === req.user?.fullName || 
+            ticket.employeeAssigned === '') {
+          return res.json(ticket);
+        } else {
+          return res.status(403).json({ message: "Forbidden: You can only view tickets assigned to you" });
+        }
+      }
+
+      // Admins can view all tickets
       res.json(ticket);
     } catch (error) {
       res.status(500).json({ message: "Error fetching ticket", error: (error as Error).message });
@@ -118,14 +215,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update a ticket
+  // Update a ticket (with role-based access)
   app.patch("/api/tickets/:id", upload.array("attachments"), async (req: Request, res: Response) => {
     try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid ticket ID" });
       }
 
+      // Get the ticket to check permissions
+      const ticket = await storage.getTicket(id);
+      if (!ticket) {
+        return res.status(404).json({ message: "Ticket not found" });
+      }
+
+      // Check role-based permissions for updates
+      if (req.user?.role === 'user') {
+        // Regular users: limited modifications, can't change status/assignment
+        if (ticketData.status || ticketData.employeeAssigned || ticketData.manager) {
+          return res.status(403).json({ 
+            message: "Forbidden: Regular users cannot change ticket status or assignments" 
+          });
+        }
+      } else if (req.user?.role === 'manager') {
+        // Department Heads: can approve, escalate, assign
+      } else if (req.user?.role === 'technician') {
+        // Technicians: can only update their assigned tickets
+        if (ticket.employeeAssigned !== req.user?.username && 
+            ticket.employeeAssigned !== req.user?.fullName &&
+            ticket.employeeAssigned !== '') {
+          return res.status(403).json({ 
+            message: "Forbidden: Technicians can only update tickets assigned to them" 
+          });
+        }
+      }
+      // Admins have full access
+      
       // Extract the JSON data from the form data
       let ticketData;
       try {
