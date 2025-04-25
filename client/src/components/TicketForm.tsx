@@ -482,34 +482,7 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Stav *</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Vyberte stav" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Otevřený">Otevřený</SelectItem>
-                          <SelectItem value="Zpracovává se">
-                            Zpracovává se
-                          </SelectItem>
-                          <SelectItem value="Vyřešený">Vyřešený</SelectItem>
-                          <SelectItem value="Uzavřený">Uzavřený</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+
 
                 <FormField
                   control={form.control}
