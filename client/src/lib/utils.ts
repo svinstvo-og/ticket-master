@@ -6,14 +6,15 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 // Function to parse QR code data
-export function parseQrCode(qrData: string): { building: string; facility: string } | null {
+export function parseQrCode(qrData: string): { building: string } | null {
   const parts = qrData.split("|");
   if (parts.length !== 2) return null;
   
   const building = parts[0].trim();
-  const facility = parts[1].trim();
+  // We still expect the QR format to be "Building A|Facility 1" for compatibility
+  // but we only use the building information now
   
-  return { building, facility };
+  return { building };
 }
 
 // Function to handle file upload and convert to base64

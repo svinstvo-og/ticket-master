@@ -8,7 +8,7 @@ export const tickets = pgTable("tickets", {
   description: text("description").notNull(),
   category: text("category").notNull(),
   building: text("building").notNull(),
-  facility: text("facility").notNull(),
+  // facility field removed
   floor: text("floor").notNull(),
   roomNumber: text("room_number").notNull(),
   roomName: text("room_name").notNull(),

@@ -63,7 +63,6 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
       description: "",
       category: "",
       building: "",
-      facility: "",
       floor: "",
       roomNumber: "",
       roomName: "",
@@ -130,12 +129,10 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
 
     if (qrData) {
       form.setValue("building", qrData.building);
-      form.setValue("facility", qrData.facility);
-
       // Show success alert
       setQrAlert({
         show: true,
-        message: `QR kód úspěšně naskenován. Budova: ${qrData.building}, Zařízení: ${qrData.facility}`,
+        message: `QR kód úspěšně naskenován. Budova: ${qrData.building}`,
         type: "success",
       });
 
@@ -331,33 +328,6 @@ export default function TicketForm({ onSubmitSuccess }: TicketFormProps) {
                           <SelectItem value="Building B">Budova B</SelectItem>
                           <SelectItem value="Building C">Budova C</SelectItem>
                           <SelectItem value="Building D">Budova D</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="facility"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Facility *</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Vyberte facility" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Facility 1">Facility 1</SelectItem>
-                          <SelectItem value="Facility 2">Facility 2</SelectItem>
-                          <SelectItem value="Facility 3">Facility 3</SelectItem>
-                          <SelectItem value="Facility 4">Facility 4</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
